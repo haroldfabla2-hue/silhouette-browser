@@ -34,8 +34,13 @@ class SilhouetteUserSystem extends EventEmitter {
       enableRoleHierarchy: options.enableRoleHierarchy !== false,
       enablePermissionInheritance: options.enablePermissionInheritance !== false,
       enableAuditLogging: options.enableAuditLogging !== false,
-      dataRetentionDays: options.dataRetentionDays || 365
+      dataRetentionDays: options.dataRetentionDays || 365,
+      forceLocalAuth: options.forceLocalAuth || false
     };
+    
+    // Detectar automáticamente el método de autenticación
+    this.authMethod = this.detectAuthMethod();
+    this.useLocalAuth = this.authMethod === 'local' || this.config.forceLocalAuth;
     
     // Almacenes de datos
     this.userStore = new Store({
@@ -63,6 +68,56 @@ class SilhouetteUserSystem extends EventEmitter {
     this.initializeDefaultPermissions();
     
     console.log('👥 Silhouette User System V6.0 initialized');
+  }
+
+  // =============================================================================
+  // DETECCIÓN AUTOMÁTICA DE MÉTODO DE AUTENTICACIÓN
+  // =============================================================================
+  
+  /**
+   * Detectar automáticamente el método de autenticación disponible
+   */
+  detectAuthMethod() {
+    // Verificar si se fuerza autenticación local
+    if (this.config.forceLocalAuth) {
+      console.log('🏠 Forced local authentication mode');
+      return 'local';
+    }
+    
+    // Verificar si Google OAuth está configurado
+    const hasGoogleOAuth = this.config.googleClientId && 
+                          this.config.googleClientSecret &&
+                          this.config.googleClientId !== 'tu_client_id_aqui' &&
+                          this.config.googleClientSecret !== 'tu_client_secret_aqui' &&
+                          !this.config.googleClientId.includes('tu_') &&
+                          !this.config.googleClientSecret.includes('tu_');
+    
+    if (hasGoogleOAuth) {
+      console.log('🔐 Google OAuth detected and configured');
+      return 'google';
+    }
+    
+    // Si no hay Google OAuth, usar autenticación local
+    console.log('🏠 Using local authentication (Google OAuth not configured)');
+    return 'local';
+  }
+  
+  /**
+   * Obtener información del sistema de autenticación actual
+   */
+  getAuthSystemInfo() {
+    return {
+      method: this.authMethod,
+      isLocal: this.useLocalAuth,
+      hasGoogleOAuth: this.authMethod === 'google',
+      isConfigured: this.authMethod === 'google' || this.useLocalAuth,
+      description: this.authMethod === 'google' ? 
+        'Google OAuth 2.0 authentication' : 
+        'Local authentication (email/password)',
+      availableMethods: this.authMethod === 'google' ? 
+        ['google', 'local'] : 
+        ['local']
+    };
   }
 
   // =============================================================================

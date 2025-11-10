@@ -89,14 +89,29 @@ class SilhouetteUserIntegration extends EventEmitter {
 
   async initializeUserSystem() {
     try {
+      // Detectar automáticamente el método de autenticación
+      const hasGoogleOAuth = process.env.GOOGLE_CLIENT_ID && 
+                            process.env.GOOGLE_CLIENT_SECRET &&
+                            process.env.GOOGLE_CLIENT_ID !== 'tu_client_id_aqui' &&
+                            process.env.GOOGLE_CLIENT_SECRET !== 'tu_client_secret_aqui';
+      
+      const forceLocalAuth = process.env.FORCE_LOCAL_AUTH === 'true';
+      
       this.userSystem = new SilhouetteUserSystem({
         jwtSecret: process.env.SILHOUETTE_USER_JWT_SECRET,
         sessionTimeout: 86400000, // 24 horas
         maxActiveSessions: 5,
-        enableGoogleOAuth: this.options.enableGoogleOAuth,
+        enableGoogleOAuth: hasGoogleOAuth && !forceLocalAuth,
+        forceLocalAuth: forceLocalAuth || !hasGoogleOAuth,
         enableGitHubIntegration: true,
         enableAuditLogging: true
       });
+      
+      // Mostrar información del sistema detectado
+      const authInfo = this.userSystem.getAuthSystemInfo();
+      console.log(`🔍 Authentication system detected: ${authInfo.method}`);
+      console.log(`📋 Available methods: ${authInfo.availableMethods.join(', ')}`);
+      console.log(`🔧 Configuration: ${authInfo.description}`);
       
       // Configurar event listeners
       this.userSystem.on('userAuthenticated', (data) => this.handleUserAuthenticated(data));
@@ -140,7 +155,15 @@ class SilhouetteUserIntegration extends EventEmitter {
 
   async initializeUserUI() {
     try {
-      this.userUI = new UserManagementUI(this.mainWindow, this.userSystem, this.googleAuth);
+      // Importar el sistema de autenticación local si es necesario
+      let localAuth = null;
+      if (this.userSystem.useLocalAuth) {
+        const { default: LocalAuthSystem } = await import('./local-auth-system.js');
+        localAuth = new LocalAuthSystem();
+        await localAuth.initialize();
+      }
+      
+      this.userUI = new UserManagementUI(this.mainWindow, this.userSystem, this.googleAuth, localAuth);
       await this.userUI.initialize();
       
       console.log('✅ User UI initialized');

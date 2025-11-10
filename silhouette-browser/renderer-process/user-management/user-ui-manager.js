@@ -5,10 +5,11 @@
 // =============================================================================
 
 export class UserManagementUI {
-  constructor(mainWindow, userSystem, googleAuth) {
+  constructor(mainWindow, userSystem, googleAuth, localAuth = null) {
     this.mainWindow = mainWindow;
     this.userSystem = userSystem;
     this.googleAuth = googleAuth;
+    this.localAuth = localAuth;
     this.currentUser = null;
     this.currentPermissions = [];
     this.isInitialized = false;
@@ -60,10 +61,22 @@ export class UserManagementUI {
     this.userSystem.on('roleAssigned', (data) => this.handleRoleAssigned(data));
     this.userSystem.on('permissionChanged', (data) => this.handlePermissionChanged(data));
     
-    // Event listeners para autenticación de Google
-    this.googleAuth.on('authSuccess', (data) => this.handleGoogleAuthSuccess(data));
-    this.googleAuth.on('authError', (data) => this.handleGoogleAuthError(data));
-    this.googleAuth.on('tokenRefreshed', () => this.updateAuthUI());
+    // Event listeners para autenticación de Google (si está disponible)
+    if (this.googleAuth) {
+      this.googleAuth.on('authSuccess', (data) => this.handleGoogleAuthSuccess(data));
+      this.googleAuth.on('authError', (data) => this.handleGoogleAuthError(data));
+      this.googleAuth.on('tokenRefreshed', () => this.updateAuthUI());
+    }
+    
+    // Event listeners para autenticación local (si está disponible)
+    if (this.localAuth) {
+      this.localAuth.on('signIn', (data) => this.handleLocalAuthSuccess(data));
+      this.localAuth.on('signInError', (data) => this.handleLocalAuthError(data));
+      this.localAuth.on('signUp', (data) => this.handleLocalSignUp(data));
+      this.localAuth.on('signUpError', (data) => this.handleLocalSignUpError(data));
+      this.localAuth.on('signOut', () => this.handleLocalAuthSignOut());
+      this.localAuth.on('profileUpdated', (data) => this.handleProfileUpdated(data));
+    }
     
     // Event listeners para IPC
     this.setupIpcEventListeners();
@@ -864,8 +877,12 @@ export class UserManagementUI {
 
   async handleLogout() {
     try {
-      // Cerrar sesión en Google
-      await this.googleAuth.logout();
+      // Cerrar sesión en el sistema disponible
+      if (this.localAuth) {
+        await this.localAuth.signOut(this.currentUser?.token);
+      } else if (this.googleAuth) {
+        await this.googleAuth.logout();
+      }
       
       // Limpiar datos de usuario
       this.userSystem.logout();
@@ -874,6 +891,151 @@ export class UserManagementUI {
       console.error('❌ Logout error:', error);
       this.showError('Error al cerrar sesión');
     }
+  }
+
+  // =============================================================================
+  // MANEJO DE AUTENTICACIÓN LOCAL
+  // =============================================================================
+  
+  async handleLocalAuthSuccess(data) {
+    console.log('✅ Local auth success:', data);
+    
+    this.currentUser = data.user;
+    this.uiState.isLoggedIn = true;
+    this.uiState.isLoading = false;
+    
+    // Actualizar UI
+    this.updateAuthUI();
+    this.showSuccess(`¡Bienvenido ${data.user.name}!`);
+    
+    // Emitir evento de autenticación exitosa
+    this.emit('localAuthSuccess', data);
+  }
+  
+  async handleLocalAuthError(data) {
+    console.error('❌ Local auth error:', data);
+    
+    this.uiState.isLoading = false;
+    this.updateAuthUI();
+    this.showError(data.message || 'Error en la autenticación local');
+    
+    this.emit('localAuthError', data);
+  }
+  
+  async handleLocalSignUp(data) {
+    console.log('✅ Local sign up success:', data);
+    
+    this.showSuccess('¡Usuario registrado exitosamente!');
+    this.emit('localSignUp', data);
+  }
+  
+  async handleLocalSignUpError(data) {
+    console.error('❌ Local sign up error:', data);
+    
+    this.showError(data.message || 'Error en el registro');
+    this.emit('localSignUpError', data);
+  }
+  
+  async handleLocalAuthSignOut() {
+    console.log('🚪 Local sign out');
+    
+    this.currentUser = null;
+    this.uiState.isLoggedIn = false;
+    
+    // Actualizar UI
+    this.updateAuthUI();
+    this.showSuccess('Sesión cerrada exitosamente');
+    
+    this.emit('localAuthSignOut');
+  }
+  
+  async handleProfileUpdated(data) {
+    console.log('📝 Profile updated:', data);
+    
+    if (this.currentUser) {
+      this.currentUser = { ...this.currentUser, ...data.user };
+    }
+    
+    this.showSuccess('Perfil actualizado exitosamente');
+    this.emit('profileUpdated', data);
+  }
+  
+  // =============================================================================
+  // FORMULARIOS DE AUTENTICACIÓN LOCAL
+  // =============================================================================
+  
+  showLocalLoginForm() {
+    return `
+      <div class="auth-form" id="localLoginForm">
+        <h3>Iniciar Sesión</h3>
+        <p class="auth-description">Ingresa con tu cuenta local</p>
+        
+        <form id="localLoginFormElement">
+          <div class="form-group">
+            <label for="localEmail">Email:</label>
+            <input type="email" id="localEmail" required placeholder="tu@email.com">
+          </div>
+          
+          <div class="form-group">
+            <label for="localPassword">Contraseña:</label>
+            <input type="password" id="localPassword" required placeholder="••••••••">
+          </div>
+          
+          <button type="submit" class="auth-btn primary" id="localLoginBtn">
+            Iniciar Sesión
+          </button>
+        </form>
+        
+        <div class="auth-actions">
+          <button class="auth-link" id="showLocalRegisterForm">¿No tienes cuenta? Regístrate</button>
+        </div>
+        
+        <div class="default-accounts">
+          <h4>Cuentas predeterminadas:</h4>
+          <p><strong>Admin:</strong> admin@silhouette.local / admin123</p>
+          <p><strong>Invitado:</strong> guest@silhouette.local / guest123</p>
+        </div>
+      </div>
+    `;
+  }
+  
+  showLocalRegisterForm() {
+    return `
+      <div class="auth-form" id="localRegisterForm">
+        <h3>Crear Cuenta</h3>
+        <p class="auth-description">Regístrate con email y contraseña</p>
+        
+        <form id="localRegisterFormElement">
+          <div class="form-group">
+            <label for="registerName">Nombre:</label>
+            <input type="text" id="registerName" required placeholder="Tu nombre">
+          </div>
+          
+          <div class="form-group">
+            <label for="registerEmail">Email:</label>
+            <input type="email" id="registerEmail" required placeholder="tu@email.com">
+          </div>
+          
+          <div class="form-group">
+            <label for="registerPassword">Contraseña:</label>
+            <input type="password" id="registerPassword" required placeholder="••••••••" minlength="8">
+          </div>
+          
+          <div class="form-group">
+            <label for="confirmPassword">Confirmar Contraseña:</label>
+            <input type="password" id="confirmPassword" required placeholder="••••••••">
+          </div>
+          
+          <button type="submit" class="auth-btn primary" id="localRegisterBtn">
+            Crear Cuenta
+          </button>
+        </form>
+        
+        <div class="auth-actions">
+          <button class="auth-link" id="showLocalLoginForm">¿Ya tienes cuenta? Inicia sesión</button>
+        </div>
+      </div>
+    `;
   }
 
   // =============================================================================
