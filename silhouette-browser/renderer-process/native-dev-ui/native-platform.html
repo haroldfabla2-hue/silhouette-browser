@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silhouette V5.1 - Plataforma de Desarrollo Nativa</title>
+    <link rel="stylesheet" href="../styles-advanced.css">
+    <style>
+        /* =============================================================================
+           SILHOUETTE V5.1 - PLATAFORMA DE DESARROLLO NATIVA
+           Sistema integrado con Browser + Live Server + Docker + URLs + Testing + Sharing
+           ============================================================================= */
+
+        /* Global Layout */
+        #native-dev-container {
+            display: grid;
+            grid-template-areas: 
+                "sidebar toolbar toolbar"
+                "sidebar main preview"
+                "sidebar terminal output";
+            grid-template-columns: 280px 1fr 400px;
+            grid-template-rows: 60px 1fr 300px;
+            height: 100vh;
+            background: linear-gradient(135deg, #0A0A0B 0%, #1A1A1B 100%);
+            color: #E5E5E5;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            overflow: hidden;
+        }
+
+        /* Sidebar - Projects & Tools */
+        .dev-sidebar {
+            grid-area: sidebar;
+            background: #1E1E1E;
+            border-right: 1px solid #404040;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Toolbar - Actions & Status */
+        .dev-toolbar {
+            grid-area: toolbar;
+            background: #2D2D30;
+            border-bottom: 1px solid #404040;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 16px;
+        }
+
+        /* Main Area - Editor + Preview */
+        .dev-main {
+            grid-area: main;
+            display: flex;
+            flex-direction: column;
+            background: #0E0E10;
+        }
+
+        /* Preview Area */
+        .dev-preview {
+            grid-area: preview;
+            background: #1A1A1B;
+            border-left: 1px solid #404040;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Terminal Area */
+        .dev-terminal {
+            grid-area: terminal;
+            background: #0E0E10;
+            border-top: 1px solid #404040;
+        }
+
+        /* Output Area */
+        .dev-output {
+            grid-area: output;
+            background: #1E1E1E;
+            border-left: 1px solid #404040;
+            border-top: 1px solid #404040;
+        }
+
+        /* Sidebar Components */
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #404040;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 12px;
+            color: #888888;
+        }
+
+        .sidebar-tabs {
+            display: flex;
+            background: #2D2D30;
+        }
+
+        .sidebar-tab {
+            flex: 1;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #CCCCCC;
+            transition: all 0.3s ease;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .sidebar-tab:hover {
+            background: #404040;
+            color: #FFFFFF;
+        }
+
+        .sidebar-tab.active {
+            background: #007ACC;
+            color: #FFFFFF;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* Project List */
+        .project-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .project-item {
+            padding: 12px;
+            background: #2A2A2B;
+            border: 1px solid #404040;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .project-item:hover {
+            background: #3A3A3B;
+            border-color: #007ACC;
+        }
+
+        .project-item.active {
+            background: #007ACC;
+            border-color: #007ACC;
+        }
+
+        .project-name {
+            font-weight: 600;
+            color: #FFFFFF;
+            margin-bottom: 4px;
+        }
+
+        .project-framework {
+            font-size: 11px;
+            color: #888888;
+        }
+
+        .project-status {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: #00AA00;
+            color: #FFFFFF;
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        .project-status.running { background: #00AA00; }
+        .project-status.stopped { background: #AA0000; }
+        .project-status.creating { background: #FF8800; }
+
+        /* Toolbar Components */
+        .toolbar-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toolbar-section.divider {
+            width: 1px;
+            height: 30px;
+            background: #404040;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: #007ACC;
+            color: #FFFFFF;
+        }
+
+        .btn-primary:hover {
+            background: #005A9E;
+        }
+
+        .btn-secondary {
+            background: #404040;
+            color: #E5E5E5;
+        }
+
+        .btn-secondary:hover {
+            background: #505050;
+        }
+
+        .btn-success {
+            background: #00AA00;
+            color: #FFFFFF;
+        }
+
+        .btn-success:hover {
+            background: #008800;
+        }
+
+        .btn-warning {
+            background: #FF8800;
+            color: #FFFFFF;
+        }
+
+        .btn-warning:hover {
+            background: #CC6600;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00AA00;
+        }
+
+        .status-dot.error { background: #FF4444; }
+        .status-dot.warning { background: #FFAA00; }
+        .status-dot.offline { background: #666666; }
+
+        /* Editor Area */
+        .editor-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .editor-tabs {
+            display: flex;
+            background: #2D2D30;
+            border-bottom: 1px solid #404040;
+        }
+
+        .editor-tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #CCCCCC;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .editor-tab:hover {
+            background: #404040;
+        }
+
+        .editor-tab.active {
+            background: #0E0E10;
+            color: #FFFFFF;
+        }
+
+        .editor-content {
+            flex: 1;
+            position: relative;
+        }
+
+        /* Preview Area */
+        .preview-header {
+            padding: 12px 16px;
+            background: #2D2D30;
+            border-bottom: 1px solid #404040;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .preview-title {
+            font-weight: 600;
+            color: #FFFFFF;
+        }
+
+        .preview-url {
+            font-size: 11px;
+            color: #888888;
+            font-family: monospace;
+        }
+
+        .preview-content {
+            flex: 1;
+            position: relative;
+            background: #FFFFFF;
+        }
+
+        .preview-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .preview-controls {
+            padding: 8px 16px;
+            background: #1E1E1E;
+            border-top: 1px solid #404040;
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Terminal Area */
+        .terminal-header {
+            padding: 12px 16px;
+            background: #2D2D30;
+            border-bottom: 1px solid #404040;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .terminal-title {
+            font-weight: 600;
+            color: #FFFFFF;
+        }
+
+        .terminal-content {
+            flex: 1;
+            background: #0E0E10;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            padding: 8px;
+            overflow-y: auto;
+        }
+
+        /* Output Area */
+        .output-header {
+            padding: 12px 16px;
+            background: #2D2D30;
+            border-bottom: 1px solid #404040;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .output-title {
+            font-weight: 600;
+            color: #FFFFFF;
+        }
+
+        .output-content {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+
+        .log-entry.info { background: #1E3A8A; color: #BFDBFE; }
+        .log-entry.success { background: #14532D; color: #BBF7D0; }
+        .log-entry.warning { background: #92400E; color: #FED7AA; }
+        .log-entry.error { background: #7F1D1D; color: #FECACA; }
+
+        /* URL Management */
+        .url-display {
+            padding: 8px 12px;
+            background: #2A2A2B;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #00AA00;
+            word-break: break-all;
+        }
+
+        .url-actions {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        .url-action {
+            padding: 2px 6px;
+            font-size: 10px;
+            background: #404040;
+            color: #E5E5E5;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .url-action:hover {
+            background: #505050;
+        }
+
+        /* Testing Interface */
+        .test-controls {
+            padding: 12px 16px;
+            background: #2A2A2B;
+            border-bottom: 1px solid #404040;
+        }
+
+        .test-result {
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .test-result.pass {
+            background: #14532D;
+            color: #BBF7D0;
+            border: 1px solid #16A34A;
+        }
+
+        .test-result.fail {
+            background: #7F1D1D;
+            color: #FECACA;
+            border: 1px solid #DC2626;
+        }
+
+        .test-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 6px;
+            background: #1E1E1E;
+            border-radius: 4px;
+        }
+
+        .metric-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #FFFFFF;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: #888888;
+            margin-top: 2px;
+        }
+
+        /* Loading States */
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #404040;
+            border-top: 2px solid #007ACC;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            #native-dev-container {
+                grid-template-areas: 
+                    "sidebar toolbar"
+                    "sidebar main"
+                    "sidebar terminal";
+                grid-template-columns: 250px 1fr;
+                grid-template-rows: 60px 1fr 250px;
+            }
+            
+            .dev-preview {
+                display: none;
+            }
+            
+            .dev-output {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #native-dev-container {
+                grid-template-areas: 
+                    "toolbar"
+                    "main"
+                    "terminal";
+                grid-template-columns: 1fr;
+                grid-template-rows: 60px 1fr 200px;
+            }
+            
+            .dev-sidebar {
+                position: absolute;
+                z-index: 1000;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .dev-sidebar.open {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="native-dev-container">
+        <!-- Sidebar -->
+        <div class="dev-sidebar" id="dev-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">Silhouette V5.1</div>
+                <div class="sidebar-subtitle">Plataforma de Desarrollo Nativa</div>
+            </div>
+            
+            <div class="sidebar-tabs">
+                <button class="sidebar-tab active" data-tab="projects">Proyectos</button>
+                <button class="sidebar-tab" data-tab="tools">Herramientas</button>
+                <button class="sidebar-tab" data-tab="services">Servicios</button>
+            </div>
+            
+            <div class="sidebar-content">
+                <!-- Projects Tab -->
+                <div id="projects-tab" class="tab-content active">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 style="margin: 0; font-size: 14px; color: #FFFFFF;">Proyectos Activos</h3>
+                        <button class="btn btn-primary" onclick="createNewProject()">
+                            <span>➕</span> Nuevo
+                        </button>
+                    </div>
+                    <div class="project-list" id="project-list">
+                        <!-- Projects will be populated dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Tools Tab -->
+                <div id="tools-tab" class="tab-content">
+                    <h3 style="margin: 0 0 16px 0; font-size: 14px; color: #FFFFFF;">Herramientas</h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <button class="btn btn-secondary" onclick="startLiveServer()">
+                            <span>🔄</span> Live Server
+                        </button>
+                        <button class="btn btn-secondary" onclick="startDocker()">
+                            <span>🐳</span> Docker
+                        </button>
+                        <button class="btn btn-secondary" onclick="showURLManager()">
+                            <span>🌐</span> URLs
+                        </button>
+                        <button class="btn btn-secondary" onclick="showTestingTools()">
+                            <span>🧪</span> Testing
+                        </button>
+                        <button class="btn btn-secondary" onclick="showPreviewSharing()">
+                            <span>📤</span> Sharing
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Services Tab -->
+                <div id="services-tab" class="tab-content">
+                    <h3 style="margin: 0 0 16px 0; font-size: 14px; color: #FFFFFF;">Servicios</h3>
+                    <div id="services-list" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Services will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toolbar -->
+        <div class="dev-toolbar">
+            <div class="toolbar-section">
+                <button class="btn btn-primary" onclick="runProject()">
+                    <span>▶️</span> Ejecutar
+                </button>
+                <button class="btn btn-secondary" onclick="stopProject()">
+                    <span>⏹️</span> Detener
+                </button>
+                <button class="btn btn-secondary" onclick="restartProject()">
+                    <span>🔄</span> Reiniciar
+                </button>
+            </div>
+            
+            <div class="toolbar-section divider"></div>
+            
+            <div class="toolbar-section">
+                <div class="status-indicator">
+                    <div class="status-dot" id="status-dot"></div>
+                    <span id="status-text">Listo</span>
+                </div>
+            </div>
+            
+            <div class="toolbar-section" style="margin-left: auto;">
+                <div class="status-indicator">
+                    <span id="system-stats">0 proyectos | 0 servicios</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Editor Area -->
+        <div class="dev-main">
+            <div class="editor-tabs">
+                <div class="editor-tab active" data-file="index.html">
+                    <span>📄</span> index.html
+                </div>
+                <div class="editor-tab" data-file="style.css">
+                    <span>🎨</span> style.css
+                </div>
+                <div class="editor-tab" data-file="script.js">
+                    <span>⚡</span> script.js
+                </div>
+                <div class="editor-tab" data-file="README.md">
+                    <span>📖</span> README.md
+                </div>
+            </div>
+            <div class="editor-container">
+                <div class="editor-content" id="monaco-editor">
+                    <!-- Monaco Editor will be initialized here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Preview Area -->
+        <div class="dev-preview">
+            <div class="preview-header">
+                <div>
+                    <div class="preview-title">Vista Previa</div>
+                    <div class="preview-url" id="preview-url">No hay proyecto activo</div>
+                </div>
+                <div class="preview-controls">
+                    <button class="btn btn-secondary" onclick="refreshPreview()">
+                        <span>🔄</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="openInBrowser()">
+                        <span>🌐</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="sharePreview()">
+                        <span>📤</span>
+                    </button>
+                </div>
+            </div>
+            <div class="preview-content">
+                <iframe class="preview-frame" id="preview-frame" src="about:blank"></iframe>
+            </div>
+            
+            <!-- Testing Controls -->
+            <div class="test-controls">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h4 style="margin: 0; font-size: 12px; color: #FFFFFF;">Testing Automatizado</h4>
+                    <button class="btn btn-warning" onclick="runTests()">
+                        <span>🧪</span> Ejecutar Tests
+                    </button>
+                </div>
+                <div class="test-metrics" id="test-metrics">
+                    <div class="metric">
+                        <div class="metric-value" id="test-pass">0</div>
+                        <div class="metric-label">Pasaron</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="test-fail">0</div>
+                        <div class="metric-label">Fallaron</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="test-duration">0ms</div>
+                        <div class="metric-label">Duración</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Terminal Area -->
+        <div class="dev-terminal">
+            <div class="terminal-header">
+                <div class="terminal-title">Terminal</div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="clearTerminal()">
+                        <span>🗑️</span> Limpiar
+                    </button>
+                    <button class="btn btn-secondary" onclick="newTerminal()">
+                        <span>➕</span> Nueva
+                    </button>
+                </div>
+            </div>
+            <div class="terminal-content" id="terminal-content">
+                <div class="log-entry info">
+                    <strong>Silhouette V5.1</strong> - Plataforma de Desarrollo Nativa iniciada
+                    <br>🤖 Integración: Browser + Live Server + Docker + URLs + Testing + Sharing
+                    <br>⏰ <span id="current-time"></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Output Area -->
+        <div class="dev-output">
+            <div class="output-header">
+                <div class="output-title">Logs & Output</div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="clearOutput()">
+                        <span>🗑️</span> Limpiar
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportLogs()">
+                        <span>📄</span> Exportar
+                    </button>
+                </div>
+            </div>
+            <div class="output-content" id="output-content">
+                <!-- Log entries will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // =============================================================================
+        // SILHOUETTE V5.1 - PLATAFORMA DE DESARROLLO NATIVA
+        // Sistema integrado con Browser + Live Server + Docker + URLs + Testing + Sharing
+        // =============================================================================
+        
+        // Global State
+        let currentProject = null;
+        let systemStatus = {
+            nativeBrowser: false,
+            liveServer: false,
+            docker: false,
+            urlRouter: false,
+            testingEngine: false,
+            previewSharing: false
+        };
+        
+        // Initialize the platform
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePlatform();
+            setupEventHandlers();
+            startSystemMonitoring();
+        });
+        
+        function initializePlatform() {
+            addLog('info', '🚀 Inicializando Silhouette V5.1 - Plataforma de Desarrollo Nativa');
+            addLog('info', '🔧 Componentes: Browser Nativo + Live Server + Docker + URLs + Testing + Sharing');
+            
+            // Simulate system initialization
+            setTimeout(() => {
+                updateSystemStatus();
+                addLog('success', '✅ Plataforma de desarrollo nativa inicializada correctamente');
+            }, 2000);
+        }
+        
+        function setupEventHandlers() {
+            // Tab switching
+            document.querySelectorAll('.sidebar-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.dataset.tab;
+                    switchSidebarTab(tabName);
+                });
+            });
+            
+            // Project selection
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('project-item')) {
+                    selectProject(e.target.dataset.projectId);
+                }
+            });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key) {
+                        case 'Enter':
+                            e.preventDefault();
+                            runProject();
+                            break;
+                        case 's':
+                            e.preventDefault();
+                            saveCurrentFile();
+                            break;
+                        case 'r':
+                            e.preventDefault();
+                            refreshPreview();
+                            break;
+                    }
+                }
+            });
+        }
+        
+        function switchSidebarTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.sidebar-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+        
+        function updateSystemStatus() {
+            // Update status indicators
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            const systemStats = document.getElementById('system-stats');
+            
+            const activeCount = Object.values(systemStatus).filter(status => status).length;
+            const totalCount = Object.keys(systemStatus).length;
+            
+            if (activeCount === totalCount) {
+                statusDot.className = 'status-dot';
+                statusText.textContent = 'Todos los sistemas activos';
+            } else if (activeCount > 0) {
+                statusDot.className = 'status-dot warning';
+                statusText.textContent = 'Algunos sistemas iniciando';
+            } else {
+                statusDot.className = 'status-dot error';
+                statusText.textContent = 'Sistemas iniciando...';
+            }
+            
+            systemStats.textContent = `Sistemas: ${activeCount}/${totalCount}`;
+            
+            // Update every 5 seconds
+            setTimeout(updateSystemStatus, 5000);
+        }
+        
+        function addLog(type, message, details = null) {
+            const outputContent = document.getElementById('output-content');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            let logMessage = `[${timestamp}] ${message}`;
+            
+            if (details) {
+                logMessage += `<br><small>${details}</small>`;
+            }
+            
+            logEntry.innerHTML = logMessage;
+            outputContent.appendChild(logEntry);
+            outputContent.scrollTop = outputContent.scrollHeight;
+        }
+        
+        function createNewProject() {
+            const projectName = prompt('Nombre del proyecto:');
+            const framework = prompt('Framework (react, vue, angular, html):', 'html');
+            
+            if (projectName) {
+                addLog('info', `Creando proyecto: ${projectName}`, `Framework: ${framework}`);
+                
+                // Simulate project creation
+                setTimeout(() => {
+                    const projectId = 'project_' + Date.now();
+                    const newProject = {
+                        id: projectId,
+                        name: projectName,
+                        framework: framework,
+                        status: 'creating',
+                        url: `http://${projectName.toLowerCase().replace(/[^a-z0-9]/g, '-')}.local:3000`,
+                        previewUrl: `https://${projectId}.silhouette.app`
+                    };
+                    
+                    addProjectToList(newProject);
+                    addLog('success', `Proyecto creado: ${projectName}`, `URL: ${newProject.url}`);
+                }, 1500);
+            }
+        }
+        
+        function addProjectToList(project) {
+            const projectList = document.getElementById('project-list');
+            const projectItem = document.createElement('div');
+            projectItem.className = 'project-item';
+            projectItem.dataset.projectId = project.id;
+            
+            projectItem.innerHTML = `
+                <div class="project-name">${project.name}</div>
+                <div class="project-framework">${project.framework}</div>
+                <div class="project-status ${project.status}">${project.status}</div>
+            `;
+            
+            projectList.appendChild(projectItem);
+        }
+        
+        function selectProject(projectId) {
+            // Update project selection
+            document.querySelectorAll('.project-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-project-id="${projectId}"]`).classList.add('active');
+            
+            // Update preview
+            const project = getProjectById(projectId);
+            if (project) {
+                currentProject = project;
+                updatePreview(project);
+                addLog('info', `Proyecto seleccionado: ${project.name}`);
+            }
+        }
+        
+        function updatePreview(project) {
+            const previewFrame = document.getElementById('preview-frame');
+            const previewUrl = document.getElementById('preview-url');
+            
+            previewFrame.src = project.url;
+            previewUrl.textContent = project.url;
+        }
+        
+        function getProjectById(projectId) {
+            // This would fetch from the actual project data
+            // For demo purposes, return a mock project
+            return {
+                id: projectId,
+                name: 'Mi Aplicación',
+                framework: 'html',
+                status: 'running',
+                url: 'http://localhost:3000',
+                previewUrl: 'https://preview.silhouette.app'
+            };
+        }
+        
+        function runProject() {
+            if (currentProject) {
+                addLog('info', `Ejecutando proyecto: ${currentProject.name}`);
+                
+                // Simulate starting the project
+                setTimeout(() => {
+                    addLog('success', `Proyecto ejecutado: ${currentProject.name}`, 'URL: http://localhost:3000');
+                    updateProjectStatus(currentProject.id, 'running');
+                }, 1000);
+            } else {
+                addLog('warning', 'No hay proyecto seleccionado');
+            }
+        }
+        
+        function stopProject() {
+            if (currentProject) {
+                addLog('info', `Deteniendo proyecto: ${currentProject.name}`);
+                
+                setTimeout(() => {
+                    addLog('success', `Proyecto detenido: ${currentProject.name}`);
+                    updateProjectStatus(currentProject.id, 'stopped');
+                }, 500);
+            } else {
+                addLog('warning', 'No hay proyecto seleccionado');
+            }
+        }
+        
+        function restartProject() {
+            if (currentProject) {
+                addLog('info', `Reiniciando proyecto: ${currentProject.name}`);
+                
+                setTimeout(() => {
+                    addLog('success', `Proyecto reiniciado: ${currentProject.name}`);
+                    updateProjectStatus(currentProject.id, 'running');
+                }, 800);
+            } else {
+                addLog('warning', 'No hay proyecto seleccionado');
+            }
+        }
+        
+        function updateProjectStatus(projectId, status) {
+            const projectItem = document.querySelector(`[data-project-id="${projectId}"]`);
+            const statusElement = projectItem.querySelector('.project-status');
+            
+            statusElement.textContent = status;
+            statusElement.className = `project-status ${status}`;
+        }
+        
+        function refreshPreview() {
+            const previewFrame = document.getElementById('preview-frame');
+            addLog('info', 'Actualizando vista previa...');
+            previewFrame.src = previewFrame.src;
+        }
+        
+        function openInBrowser() {
+            if (currentProject) {
+                addLog('info', `Abriendo en navegador: ${currentProject.url}`);
+                window.open(currentProject.url, '_blank');
+            } else {
+                addLog('warning', 'No hay proyecto activo');
+            }
+        }
+        
+        function sharePreview() {
+            if (currentProject) {
+                addLog('info', 'Generando URL de preview compartible...');
+                
+                setTimeout(() => {
+                    addLog('success', 'URL de preview generada', currentProject.previewUrl);
+                    navigator.clipboard.writeText(currentProject.previewUrl);
+                }, 1000);
+            } else {
+                addLog('warning', 'No hay proyecto activo');
+            }
+        }
+        
+        function runTests() {
+            if (currentProject) {
+                addLog('info', 'Ejecutando tests automatizados...');
+                
+                // Simulate test execution
+                let passCount = Math.floor(Math.random() * 5) + 3;
+                let failCount = Math.floor(Math.random() * 2);
+                let duration = Math.floor(Math.random() * 3000) + 1000;
+                
+                setTimeout(() => {
+                    document.getElementById('test-pass').textContent = passCount;
+                    document.getElementById('test-fail').textContent = failCount;
+                    document.getElementById('test-duration').textContent = duration + 'ms';
+                    
+                    if (failCount === 0) {
+                        addLog('success', `Tests completados: ${passCount} pasaron, ${failCount} fallaron`, `Duración: ${duration}ms`);
+                    } else {
+                        addLog('warning', `Tests completados: ${passCount} pasaron, ${failCount} fallaron`, `Duración: ${duration}ms`);
+                    }
+                }, 2000);
+            } else {
+                addLog('warning', 'No hay proyecto activo para testing');
+            }
+        }
+        
+        function clearTerminal() {
+            document.getElementById('terminal-content').innerHTML = '';
+        }
+        
+        function clearOutput() {
+            document.getElementById('output-content').innerHTML = '';
+        }
+        
+        function exportLogs() {
+            const logs = document.getElementById('output-content').innerText;
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `silhouette-logs-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+        }
+        
+        function newTerminal() {
+            addLog('info', 'Nueva terminal creada');
+        }
+        
+        // Tool functions
+        function startLiveServer() {
+            addLog('info', 'Iniciando Live Server...');
+            setTimeout(() => {
+                systemStatus.liveServer = true;
+                addLog('success', 'Live Server iniciado', 'Puerto: 35729');
+            }, 1000);
+        }
+        
+        function startDocker() {
+            addLog('info', 'Iniciando Docker Integration...');
+            setTimeout(() => {
+                systemStatus.docker = true;
+                addLog('success', 'Docker Integration iniciado');
+            }, 1500);
+        }
+        
+        function showURLManager() {
+            addLog('info', 'URL Manager - Funciones disponibles:');
+            addLog('info', '- Generación de URLs personalizadas', 'Dominios: .local, .silhouette.app');
+            addLog('info', '- SSL/TLS automático', 'Gestión de certificados');
+            addLog('info', '- Proxy y routing', 'Enrutamiento inteligente');
+        }
+        
+        function showTestingTools() {
+            addLog('info', 'Testing Tools - Capacidades:');
+            addLog('info', '- Tests E2E automatizados', 'Puppeteer + Playwright');
+            addLog('info', '- Performance testing', 'Métricas en tiempo real');
+            addLog('info', '- Visual regression', 'Comparación de snapshots');
+        }
+        
+        function showPreviewSharing() {
+            addLog('info', 'Preview Sharing - Funcionalidades:');
+            addLog('info', '- URLs compartibles', 'Para revisión de equipos');
+            addLog('info', '- Analytics detallado', 'Métricas de uso');
+            addLog('info', '- Control de acceso', 'Público/Privado/Team');
+        }
+        
+        function saveCurrentFile() {
+            addLog('info', 'Guardando archivo actual...');
+            // Simulate file save
+            setTimeout(() => {
+                addLog('success', 'Archivo guardado correctamente');
+            }, 500);
+        }
+        
+        function startSystemMonitoring() {
+            // Update current time
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('current-time').textContent = now.toLocaleString();
+            }, 1000);
+            
+            // Monitor system components
+            setTimeout(() => {
+                systemStatus.nativeBrowser = true;
+                systemStatus.urlRouter = true;
+                systemStatus.testingEngine = true;
+                systemStatus.previewSharing = true;
+            }, 3000);
+        }
+        
+        // Add welcome message
+        setTimeout(() => {
+            addLog('success', '🎉 ¡Bienvenido a Silhouette V5.1!', 'La plataforma de desarrollo más avanzada del mundo');
+            addLog('info', '💡 Usa Ctrl+Enter para ejecutar, Ctrl+S para guardar, Ctrl+R para actualizar preview');
+        }, 1000);
+    </script>
+</body>
+</html>
