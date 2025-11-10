@@ -620,8 +620,11 @@ class TabGroupsUIManager {
     }
     
     // Limpiar formulario
-    document.getElementById('groupName')?.value = '';
-    document.getElementById('groupDescription')?.value = '';
+    const groupNameField = document.getElementById('groupName');
+    if (groupNameField) groupNameField.value = '';
+    
+    const groupDescriptionField = document.getElementById('groupDescription');
+    if (groupDescriptionField) groupDescriptionField.value = '';
     document.getElementById('groupType').value = 'manual';
     document.getElementById('autoAddTabs').checked = false;
   }

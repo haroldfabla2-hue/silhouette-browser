@@ -168,6 +168,9 @@
 - ❌ Global npm permissions → ✅ Instalación local optimizada
 - ❌ Missing playwright-mcp.js → ✅ Core functionality verified
 - ❌ WebView deprecation warnings → ✅ Migrated to BrowserView
+- ❌ **Sintaxis errors en preload-browserview.js** → ✅ **Errores de sintaxis corregidos**
+- ❌ **Operador de encadenamiento en asignaciones** → ✅ **Sintaxis compatible con Node.js**
+- ❌ **Estructura de objetos en preload script** → ✅ **Estructura corregida y verificada**
 
 ### 📚 DOCUMENTACIÓN
 

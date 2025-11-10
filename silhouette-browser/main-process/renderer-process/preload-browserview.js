@@ -179,15 +179,6 @@ contextBridge.exposeInMainWorld('silhouetteAPI', {
   onTabMovedBetweenGroups: (callback) => {
     ipcRenderer.on('group:tab-moved', (event, data) => callback(data));
   },
-  },
-
-  onPageTitleUpdated: (callback) => {
-    ipcRenderer.on('page:title-updated', (event, data) => callback(data));
-  },
-
-  onPageFaviconUpdated: (callback) => {
-    ipcRenderer.on('page:favicon-updated', (event, data) => callback(data));
-  },
 
   // Utilities
   notifications: {
@@ -211,6 +202,15 @@ contextBridge.exposeInMainWorld('silhouetteAPI', {
     get: (key) => ipcRenderer.invoke('config:get', key),
     set: (key, value) => ipcRenderer.invoke('config:set', key, value),
     getAll: () => ipcRenderer.invoke('config:getAll'),
+  },
+
+  // Browser events
+  onPageTitleUpdated: (callback) => {
+    ipcRenderer.on('page:title-updated', (event, data) => callback(data));
+  },
+
+  onPageFaviconUpdated: (callback) => {
+    ipcRenderer.on('page:favicon-updated', (event, data) => callback(data));
   },
 
   // Version info
