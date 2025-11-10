@@ -15,6 +15,7 @@ import { AgentOrchestrator } from '../agent-orchestrator/orchestrator.js';
 import { ExtensionEngine } from '../extension-engine/extension-manager.js';
 import { BrowserCore } from '../browser-core/engine.js';
 import { NativeIntegrationCore } from '../native-integration/native-integration-core.js';
+import { SilhouetteOmnipotentAPI } from '../../omnipotent-system/api/omnipotent-api.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,6 +28,9 @@ class SilhouetteBrowser {
     this.extensionEngine = new ExtensionEngine();
     this.browserCore = new BrowserCore();
     this.nativeIntegration = new NativeIntegrationCore();
+    
+    // Sistema Omnipotente Integrado
+    this.omnipotentAPI = new SilhouetteOmnipotentAPI();
     
     // Configuración de la aplicación
     this.config = {
@@ -59,6 +63,9 @@ class SilhouetteBrowser {
       
       // Inicializar integración nativa V5.1
       await this.initializeNativeIntegration();
+      
+      // Inicializar Sistema Omnipotente
+      await this.initializeOmnipotentSystem();
       
       // Configurar IPC handlers
       this.setupIpcHandlers();
@@ -134,6 +141,17 @@ class SilhouetteBrowser {
     console.log('⚡ Initializing native integration V5.1...');
     await this.nativeIntegration.initialize();
     console.log('✅ Native integration ready - Browser + Live Server + Docker + Testing + Sharing');
+  }
+
+  async initializeOmnipotentSystem() {
+    console.log('🚀 Initializing Omnipotent System Integration...');
+    try {
+      await this.omnipotentAPI.initialize();
+      console.log('✅ Omnipotent System ready - Browser Control Total');
+    } catch (error) {
+      console.error('❌ Failed to initialize Omnipotent System:', error);
+      // No bloquear la aplicación por fallo del sistema omnipotente
+    }
   }
 
   // =============================================================================
@@ -256,6 +274,69 @@ class SilhouetteBrowser {
 
     ipcMain.handle('extension:getInstalled', async () => {
       return await this.extensionEngine.getInstalledExtensions();
+    });
+
+    // Omnipotent System Control
+    ipcMain.handle('omnipotent:executeCommand', async (event, commandData) => {
+      try {
+        const { command, webviewUrl, webviewId } = commandData;
+        console.log('🤖 Executing omnipotent command:', command);
+        
+        // Ejecutar comando en el contexto del navegador
+        const result = await this.omnipotentAPI.executeOmnipotentTask({
+          description: command,
+          webviewContext: {
+            url: webviewUrl,
+            id: webviewId
+          }
+        });
+        
+        return {
+          success: true,
+          result: result,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        console.error('❌ Omnipotent command error:', error);
+        return {
+          success: false,
+          error: error.message,
+          timestamp: new Date().toISOString()
+        };
+      }
+    });
+
+    ipcMain.handle('omnipotent:getStatus', async () => {
+      try {
+        return await this.omnipotentAPI.getStatus();
+      } catch (error) {
+        console.error('❌ Omnipotent status error:', error);
+        return {
+          success: false,
+          error: error.message
+        };
+      }
+    });
+
+    ipcMain.handle('omnipotent:navigateAndExtract', async (event, data) => {
+      try {
+        const { url, task } = data;
+        console.log('🤖 Navigating and extracting:', url, task);
+        
+        const result = await this.omnipotentAPI.autonomousNavigation(url, task);
+        return {
+          success: true,
+          result: result,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        console.error('❌ Navigate and extract error:', error);
+        return {
+          success: false,
+          error: error.message,
+          timestamp: new Date().toISOString()
+        };
+      }
     });
 
     // Configuration

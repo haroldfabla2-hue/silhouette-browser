@@ -108,6 +108,14 @@ contextBridge.exposeInMainWorld('silhouetteAPI', {
     performanceAlert: (callback) => ipcRenderer.on('performance-alert', callback)
   },
 
+  // Sistema Omnipotente
+  omnipotent: {
+    executeCommand: (commandData) => ipcRenderer.invoke('omnipotent:executeCommand', commandData),
+    getStatus: () => ipcRenderer.invoke('omnipotent:getStatus'),
+    navigateAndExtract: (data) => ipcRenderer.invoke('omnipotent:navigateAndExtract', data),
+    isActive: () => ipcRenderer.invoke('omnipotent:isActive')
+  },
+
   // Remover listeners
   off: {
     tabChanged: (callback) => ipcRenderer.removeListener('tab-changed', callback),

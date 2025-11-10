@@ -1434,6 +1434,7 @@
                     <button class="ai-tab" data-tab="routing">Enrutamiento</button>
                     <button class="ai-tab" data-tab="monitoring">Monitor</button>
                     <button class="ai-tab" data-tab="widgets">🎨 Widgets</button>
+                    <button class="ai-tab" data-tab="omnipotent">🤖 Control Total</button>
                     <button class="ai-tab" data-tab="general">General</button>
                     <button class="ai-tab" data-tab="tasks">Tareas</button>
                 </div>
@@ -1876,6 +1877,82 @@
                                 <button class="btn btn-secondary" onclick="exportWidgetConfig()">📤 Exportar</button>
                                 <button class="btn btn-secondary" onclick="importWidgetConfig()">📥 Importar</button>
                                 <button class="btn btn-danger" onclick="clearAllWidgets()">🗑️ Limpiar Todo</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Omnipotent Control Tab -->
+                <div class="tab-content" id="omnipotentTab">
+                    <div class="config-container">
+                        <div class="config-section">
+                            <h3>🤖 Control Total del Navegador</h3>
+                            <p style="color: var(--text-muted); margin-bottom: 20px;">Comandos en lenguaje natural para controlar cualquier página web</p>
+                            
+                            <!-- Command Input -->
+                            <div style="background: var(--background-tertiary); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <h4 style="color: var(--primary-color); margin-bottom: 15px;">🎯 Comando</h4>
+                                <textarea 
+                                    id="omnipotentCommand" 
+                                    placeholder="Ejemplo: 'Ve a GitHub, busca proyectos de React y extrae los top 5 con sus stats'" 
+                                    style="width: 100%; height: 80px; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--background-primary); color: var(--text-primary); resize: vertical; font-family: inherit;"
+                                ></textarea>
+                                <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                    <button class="btn btn-primary" onclick="executeOmnipotentCommand()">
+                                        🚀 Ejecutar Comando
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="clearOmnipotentCommand()">
+                                        🗑️ Limpiar
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="getOmnipotentStatus()">
+                                        📊 Estado
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Current Page Info -->
+                            <div style="background: var(--background-tertiary); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <h4 style="color: var(--primary-color); margin-bottom: 15px;">🌐 Página Actual</h4>
+                                <div id="currentPageInfo" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <div>
+                                        <strong>URL:</strong>
+                                        <div id="currentUrl" style="color: var(--text-muted); font-size: 0.9em; word-break: break-all; margin-top: 5px;">about:blank</div>
+                                    </div>
+                                    <div>
+                                        <strong>Estado:</strong>
+                                        <div id="omnipotentStatus" style="color: var(--success-color); margin-top: 5px;">✅ Listo</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Results Display -->
+                            <div style="background: var(--background-tertiary); border-radius: 12px; padding: 20px; min-height: 300px;">
+                                <h4 style="color: var(--primary-color); margin-bottom: 15px;">📋 Resultados</h4>
+                                <div id="omnipotentResults" style="background: var(--background-primary); border-radius: 8px; padding: 15px; min-height: 200px; color: var(--text-primary); font-family: 'Courier New', monospace; font-size: 0.9em; overflow-y: auto;">
+                                    <div style="color: var(--text-muted); text-align: center; padding: 40px;">
+                                        <div style="font-size: 32px; margin-bottom: 10px;">🤖</div>
+                                        <div>Ejecuta un comando para ver los resultados aquí</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Commands -->
+                            <div style="margin-top: 20px;">
+                                <h4 style="color: var(--primary-color); margin-bottom: 15px;">⚡ Comandos Rápidos</h4>
+                                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                    <button class="btn btn-secondary" onclick="setQuickCommand('Navigate to the homepage and take a screenshot')">
+                                        🏠 Ir al Inicio
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="setQuickCommand('Extract all links from this page')">
+                                        🔗 Extraer Enlaces
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="setQuickCommand('Find and fill out any contact forms')">
+                                        📝 Llenar Formulario
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="setQuickCommand('Search for information about artificial intelligence')">
+                                        🔍 Buscar IA
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2749,6 +2826,234 @@
         
         let ui;
 
+        // ========================================================================
+        // SISTEMA OMNIPOTENTE - FUNCIONES PRINCIPALES
+        // ========================================================================
+        
+        // Ejecutar comando omnipotente
+        async function executeOmnipotentCommand() {
+            const commandTextarea = document.getElementById('omnipotentCommand');
+            const resultsDiv = document.getElementById('omnipotentResults');
+            const statusDiv = document.getElementById('omnipotentStatus');
+            
+            if (!commandTextarea || !resultsDiv || !statusDiv) {
+                console.error('Elementos del sistema omnipotente no encontrados');
+                return;
+            }
+            
+            const command = commandTextarea.value.trim();
+            if (!command) {
+                showOmnipotentNotification('Por favor ingresa un comando', 'warning');
+                return;
+            }
+            
+            // Obtener información de la página actual
+            const webview = document.getElementById('webview');
+            const currentUrl = webview ? webview.src : 'about:blank';
+            
+            // Mostrar estado de ejecución
+            statusDiv.textContent = '⏳ Ejecutando...';
+            statusDiv.style.color = 'var(--warning-color)';
+            
+            // Limpiar resultados anteriores
+            resultsDiv.innerHTML = '<div style="color: var(--text-muted); padding: 20px;">⏳ Ejecutando comando...</div>';
+            
+            try {
+                console.log('🤖 Ejecutando comando omnipotente:', command);
+                
+                // Enviar comando al main process
+                const result = await window.silhouetteAPI.omnipotent.executeCommand({
+                    command: command,
+                    webviewUrl: currentUrl,
+                    webviewId: 'main-webview'
+                });
+                
+                if (result.success) {
+                    statusDiv.textContent = '✅ Completado';
+                    statusDiv.style.color = 'var(--success-color)';
+                    
+                    // Mostrar resultados
+                    resultsDiv.innerHTML = formatOmnipotentResult(result.result);
+                    
+                    showOmnipotentNotification('Comando ejecutado exitosamente', 'success');
+                } else {
+                    throw new Error(result.error || 'Error desconocido');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error en comando omnipotente:', error);
+                statusDiv.textContent = '❌ Error';
+                statusDiv.style.color = 'var(--error-color)';
+                
+                resultsDiv.innerHTML = `<div style="color: var(--error-color); padding: 20px;">
+                    <strong>Error:</strong> ${error.message}<br>
+                    <small>Verifica la consola para más detalles</small>
+                </div>`;
+                
+                showOmnipotentNotification('Error ejecutando comando: ' + error.message, 'error');
+            }
+        }
+        
+        // Limpiar comando
+        function clearOmnipotentCommand() {
+            const commandTextarea = document.getElementById('omnipotentCommand');
+            const resultsDiv = document.getElementById('omnipotentResults');
+            const statusDiv = document.getElementById('omnipotentStatus');
+            
+            if (commandTextarea) {
+                commandTextarea.value = '';
+            }
+            
+            if (resultsDiv) {
+                resultsDiv.innerHTML = `
+                    <div style="color: var(--text-muted); text-align: center; padding: 40px;">
+                        <div style="font-size: 32px; margin-bottom: 10px;">🤖</div>
+                        <div>Ejecuta un comando para ver los resultados aquí</div>
+                    </div>
+                `;
+            }
+            
+            if (statusDiv) {
+                statusDiv.textContent = '✅ Listo';
+                statusDiv.style.color = 'var(--success-color)';
+            }
+        }
+        
+        // Obtener estado del sistema omnipotente
+        async function getOmnipotentStatus() {
+            const statusDiv = document.getElementById('omnipotentStatus');
+            const resultsDiv = document.getElementById('omnipotentResults');
+            
+            if (!statusDiv || !resultsDiv) return;
+            
+            statusDiv.textContent = '⏳ Consultando...';
+            statusDiv.style.color = 'var(--warning-color)';
+            
+            try {
+                const status = await window.silhouetteAPI.omnipotent.getStatus();
+                
+                if (status.success) {
+                    statusDiv.textContent = '✅ Activo';
+                    statusDiv.style.color = 'var(--success-color)';
+                    
+                    const statusHtml = `
+                        <div style="color: var(--text-primary); padding: 20px;">
+                            <h4 style="color: var(--primary-color); margin-bottom: 15px;">📊 Estado del Sistema</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                                <div>
+                                    <strong>Inicializado:</strong><br>
+                                    <span style="color: ${status.initialized ? 'var(--success-color)' : 'var(--error-color)'}">
+                                        ${status.initialized ? '✅ Sí' : '❌ No'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <strong>Playwright Engine:</strong><br>
+                                    <span style="color: ${status.availableEngines?.playwright ? 'var(--success-color)' : 'var(--warning-color)'}">
+                                        ${status.availableEngines?.playwright ? '✅ Activo' : '⚠️ Inactivo'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <strong>Snowfort Engine:</strong><br>
+                                    <span style="color: ${status.availableEngines?.snowfort ? 'var(--success-color)' : 'var(--warning-color)'}">
+                                        ${status.availableEngines?.snowfort ? '✅ Activo' : '⚠️ Inactivo'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <strong>Tareas Ejecutadas:</strong><br>
+                                    <span style="color: var(--text-primary)">${status.executionHistory?.length || 0}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <strong>Última Actividad:</strong><br>
+                                <span style="color: var(--text-muted); font-size: 0.9em;">
+                                    ${new Date().toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    resultsDiv.innerHTML = statusHtml;
+                    showOmnipotentNotification('Estado obtenido exitosamente', 'success');
+                } else {
+                    throw new Error(status.error);
+                }
+            } catch (error) {
+                console.error('Error obteniendo estado:', error);
+                statusDiv.textContent = '❌ Error';
+                statusDiv.style.color = 'var(--error-color)';
+                showOmnipotentNotification('Error consultando estado: ' + error.message, 'error');
+            }
+        }
+        
+        // Establecer comando rápido
+        function setQuickCommand(command) {
+            const commandTextarea = document.getElementById('omnipotentCommand');
+            if (commandTextarea) {
+                commandTextarea.value = command;
+                commandTextarea.focus();
+            }
+        }
+        
+        // Actualizar información de página actual
+        function updateCurrentPageInfo() {
+            const webview = document.getElementById('webview');
+            const currentUrlDiv = document.getElementById('currentUrl');
+            
+            if (webview && currentUrlDiv) {
+                currentUrlDiv.textContent = webview.src || 'about:blank';
+            }
+        }
+        
+        // Formatear resultado de comando omnipotente
+        function formatOmnipotentResult(result) {
+            if (!result) {
+                return '<div style="color: var(--text-muted); padding: 20px;">No hay resultados para mostrar</div>';
+            }
+            
+            const timestamp = new Date().toLocaleString();
+            const duration = result.duration ? `${result.duration}ms` : 'N/A';
+            const steps = result.stepsCompleted || 0;
+            
+            return `
+                <div style="color: var(--text-primary);">
+                    <div style="background: var(--background-tertiary); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                        <h4 style="color: var(--primary-color); margin-bottom: 10px;">📋 Resumen de Ejecución</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 0.9em;">
+                            <div><strong>Estado:</strong> <span style="color: var(--success-color)">✅ Completado</span></div>
+                            <div><strong>Duración:</strong> ${duration}</div>
+                            <div><strong>Pasos:</strong> ${steps}</div>
+                        </div>
+                        <div style="margin-top: 10px;"><strong>Timestamp:</strong> ${timestamp}</div>
+                    </div>
+                    
+                    ${result.logs ? `
+                        <div style="background: var(--background-tertiary); border-radius: 8px; padding: 15px;">
+                            <h4 style="color: var(--primary-color); margin-bottom: 10px;">📝 Detalles de Ejecución</h4>
+                            <div style="font-family: 'Courier New', monospace; font-size: 0.85em; line-height: 1.4; max-height: 300px; overflow-y: auto;">
+                                ${result.logs.map(log => `<div style="margin-bottom: 5px;">${log}</div>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${result.data ? `
+                        <div style="background: var(--background-tertiary); border-radius: 8px; padding: 15px; margin-top: 15px;">
+                            <h4 style="color: var(--primary-color); margin-bottom: 10px;">💾 Datos Extraídos</h4>
+                            <pre style="background: var(--background-primary); padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 0.8em; max-height: 200px; overflow-y: auto;">${JSON.stringify(result.data, null, 2)}</pre>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+        
+        // Mostrar notificación del sistema omnipotente
+        function showOmnipotentNotification(message, type = 'info') {
+            if (ui && typeof ui.showNotification === 'function') {
+                ui.showNotification(`🤖 ${message}`, type);
+            } else {
+                console.log(`🤖 ${message}`);
+            }
+        }
+
         function testApiConnection(apiName) {
             ui.testApiConnection(apiName);
         }
@@ -2814,11 +3119,14 @@
                 initializeWidgetSystem();
             }
             
+            // Inicializar sistema omnipotente
+            initializeOmnipotentSystem();
+            
             ui = new SilhouetteAdvancedUI();
             
             // Mostrar mensaje de bienvenida
             setTimeout(() => {
-                ui.showNotification('¡Bienvenido a Silhouette Browser V5.2! Ahora con temas y widgets personalizados.', 'info', '🎉 Inicialización V5.2');
+                ui.showNotification('¡Bienvenido a Silhouette Browser V5.3! Ahora con Control Total Omnipotente integrado.', 'info', '🎉 Inicialización V5.3');
             }, 1000);
         });
 
@@ -2904,6 +3212,32 @@
                 widgetCanvas.ondrop = handleWidgetDrop;
                 widgetCanvas.ondragleave = handleWidgetDragLeave;
             }
+        }
+        
+        function initializeOmnipotentSystem() {
+            console.log('🤖 Inicializando sistema omnipotente...');
+            
+            // Actualizar información de página actual
+            updateCurrentPageInfo();
+            
+            // Configurar event listeners para el webview
+            const webview = document.getElementById('webview');
+            if (webview) {
+                webview.addEventListener('load-commit', () => {
+                    updateCurrentPageInfo();
+                });
+                
+                webview.addEventListener('did-finish-load', () => {
+                    updateCurrentPageInfo();
+                    showOmnipotentNotification('Página cargada: ' + (webview.src || 'about:blank'), 'info');
+                });
+                
+                webview.addEventListener('did-fail-load', () => {
+                    showOmnipotentNotification('Error cargando página', 'warning');
+                });
+            }
+            
+            console.log('✅ Sistema omnipotente inicializado');
         }
         
         function handleWidgetDragStart(event) {
@@ -3110,6 +3444,10 @@
                     case '6':
                         e.preventDefault();
                         ui.switchTab('widgets');
+                        break;
+                    case '7':
+                        e.preventDefault();
+                        ui.switchTab('omnipotent');
                         break;
                 }
             }
