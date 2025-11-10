@@ -832,6 +832,11 @@ Estado actual:
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Silhouette Browser V5.3 - BrowserView Edition inicializando...');
             
+            // Inicializar sistema de usuarios primero
+            if (window.UserUIManager) {
+                await window.UserUIManager.initialize();
+            }
+            
             initializeBrowserView();
             setupEventListeners();
             setupOmnipotentSystem();
@@ -1363,5 +1368,6 @@ Verifica la sintaxis del comando o intenta una acción más específica.
     
     <!-- Scripts de funcionalidad -->
     <script src="tab-groups-ui.js"></script>
+    <script src="user-ui-manager.js"></script>
 </body>
 </html>

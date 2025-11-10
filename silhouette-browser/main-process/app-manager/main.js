@@ -17,6 +17,11 @@ import { BrowserCore } from '../browser-core/engine-browserview.js';
 import { NativeIntegrationCore } from '../native-integration/native-integration-core.js';
 import { SilhouetteOmnipotentAPI } from '../../omnipotent-system/api/omnipotent-api.js';
 
+// Importar Sistema de Usuarios
+import { UserSystemCore } from '../user-management/user-system-core.js';
+import { GoogleAuthSystem } from '../user-management/google-auth-system.js';
+import { UserIntegrationSystem } from '../user-management/user-integration-system.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -31,6 +36,11 @@ class SilhouetteBrowser {
     
     // Sistema Omnipotente Integrado
     this.omnipotentAPI = new SilhouetteOmnipotentAPI();
+    
+    // Sistema de Usuarios Integrado
+    this.userSystem = new UserSystemCore();
+    this.googleAuth = new GoogleAuthSystem();
+    this.userIntegration = new UserIntegrationSystem(this.userSystem, this.googleAuth);
     
     // Configuración de la aplicación
     this.config = {
@@ -66,6 +76,9 @@ class SilhouetteBrowser {
       
       // Inicializar Sistema Omnipotente
       await this.initializeOmnipotentSystem();
+      
+      // Inicializar Sistema de Usuarios
+      await this.initializeUserSystem();
       
       // Configurar IPC handlers
       this.setupIpcHandlers();
@@ -169,6 +182,28 @@ class SilhouetteBrowser {
     } catch (error) {
       console.error('❌ Failed to initialize Omnipotent System:', error);
       // No bloquear la aplicación por fallo del sistema omnipotente
+    }
+  }
+
+  async initializeUserSystem() {
+    console.log('👤 Initializing User Management System...');
+    try {
+      // Inicializar sistema core de usuarios
+      await this.userSystem.initialize();
+      console.log('✅ User System Core ready - RBAC & Session Management');
+      
+      // Inicializar autenticación con Google
+      await this.googleAuth.initialize();
+      console.log('✅ Google Auth System ready - OAuth 2.0 & FedCM');
+      
+      // Inicializar integración del sistema
+      await this.userIntegration.initialize();
+      console.log('✅ User Integration System ready - IPC & Permission Hooks');
+      
+      console.log('✅ User Management System fully initialized - Enterprise Grade Authentication');
+    } catch (error) {
+      console.error('❌ Failed to initialize User Management System:', error);
+      // No bloquear la aplicación por fallo del sistema de usuarios
     }
   }
 
@@ -930,6 +965,13 @@ class SilhouetteBrowser {
 
     // Integrar eventos del TabManager con IPC para comunicación al renderer
     this.setupTabManagerEventBridge();
+
+    // =============================================================================
+    // USER MANAGEMENT SYSTEM IPC HANDLERS
+    // =============================================================================
+    
+    // Configurar handlers del sistema de usuarios
+    this.userIntegration.setupIpcHandlers(ipcMain, this.mainWindow);
 
     console.log('✅ IPC handlers configured for BrowserView');
   }

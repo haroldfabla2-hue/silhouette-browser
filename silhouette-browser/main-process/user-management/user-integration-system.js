@@ -548,7 +548,7 @@ class SilhouetteUserIntegration extends EventEmitter {
     }
   }
 
-  saveUserState(user) {
+  async saveUserState(user) {
     try {
       const state = {
         user: {
