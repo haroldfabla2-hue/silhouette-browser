@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silhouette Browser V4.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        .browser-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ========================================================================
+           PANEL IZQUIERDO - NAVEGADOR WEB
+           ======================================================================== */
+        .browser-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            background: #2d2d2d;
+            border-right: 1px solid #444;
+        }
+
+        .browser-header {
+            background: #1e1e1e;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .nav-button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #333;
+            color: #888;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .nav-button:hover {
+            background: #444;
+            color: #fff;
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .url-bar {
+            flex: 1;
+            height: 32px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 0 12px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .url-bar:focus {
+            border-color: #007acc;
+        }
+
+        .browser-controls {
+            display: flex;
+            gap: 5px;
+        }
+
+        .control-button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #333;
+            color: #888;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .control-button:hover {
+            background: #444;
+            color: #fff;
+        }
+
+        .ai-control {
+            background: #007acc;
+            color: #fff;
+        }
+
+        .ai-control:hover {
+            background: #005999;
+        }
+
+        .browser-content {
+            flex: 1;
+            background: #fff;
+            position: relative;
+        }
+
+        .webview {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #333;
+            border-top: 4px solid #007acc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ========================================================================
+           PANEL DERECHO - IA Y CONFIGURACIÓN
+           ======================================================================== */
+        .ai-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1a1a1a;
+            min-width: 400px;
+        }
+
+        .ai-header {
+            background: #2d2d2d;
+            padding: 15px 20px;
+            border-bottom: 1px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ai-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #007acc;
+        }
+
+        .ai-tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .ai-tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .ai-tab.active {
+            background: #007acc;
+            color: #fff;
+        }
+
+        .ai-tab:hover {
+            color: #fff;
+            background: #333;
+        }
+
+        .ai-tab.active:hover {
+            background: #005999;
+        }
+
+        .ai-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ========================================================================
+           CHAT INTERFACE
+           ======================================================================== */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+
+        .welcome-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message.user {
+            background: #007acc;
+            align-self: flex-end;
+            color: #fff;
+        }
+
+        .message.ai {
+            background: #333;
+            align-self: flex-start;
+            color: #fff;
+        }
+
+        .message.executing {
+            background: #ff6b35;
+            color: #fff;
+            font-style: italic;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid #444;
+            background: #1e1e1e;
+        }
+
+        .chat-input {
+            width: 100%;
+            min-height: 40px;
+            max-height: 120px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 20px;
+            padding: 12px 20px;
+            color: #fff;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .chat-input:focus {
+            border-color: #007acc;
+        }
+
+        .chat-send-button {
+            position: absolute;
+            right: 32px;
+            bottom: 32px;
+            width: 40px;
+            height: 40px;
+            background: #007acc;
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .chat-send-button:hover {
+            background: #005999;
+            transform: scale(1.05);
+        }
+
+        .chat-send-button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ========================================================================
+           CONFIGURACIÓN DE APIS
+           ======================================================================== */
+        .config-container {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .config-section {
+            margin-bottom: 30px;
+        }
+
+        .config-section h3 {
+            color: #007acc;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .api-card {
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .api-card.required {
+            border-left: 4px solid #ff6b35;
+        }
+
+        .api-card.optional {
+            border-left: 4px solid #4ecdc4;
+        }
+
+        .api-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .api-name {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .api-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .api-status.connected {
+            background: #2d5a2d;
+            color: #4ecdc4;
+        }
+
+        .api-status.disconnected {
+            background: #5a2d2d;
+            color: #ff6b35;
+        }
+
+        .api-input {
+            width: 100%;
+            padding: 8px 12px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .api-input:focus {
+            border-color: #007acc;
+        }
+
+        .api-input.error {
+            border-color: #ff6b35;
+        }
+
+        .usage-indicator {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .fallback-config {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #444;
+        }
+
+        .fallback-label {
+            font-size: 12px;
+            color: #888;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .fallback-select {
+            width: 100%;
+            padding: 6px 10px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 13px;
+        }
+
+        /* ========================================================================
+           EQUIPOS V4.0
+           ======================================================================== */
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .team-card {
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 16px;
+            position: relative;
+        }
+
+        .team-card.active {
+            border-color: #4ecdc4;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.2);
+        }
+
+        .team-card.inactive {
+            opacity: 0.6;
+        }
+
+        .team-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .team-name {
+            font-weight: 600;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .team-toggle {
+            appearance: none;
+            width: 44px;
+            height: 24px;
+            background: #555;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .team-toggle:checked {
+            background: #4ecdc4;
+        }
+
+        .team-toggle::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: all 0.2s;
+        }
+
+        .team-toggle:checked::before {
+            transform: translateX(20px);
+        }
+
+        .team-specialists {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .team-priority {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .priority-label {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .priority-slider {
+            flex: 1;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .priority-fill {
+            height: 100%;
+            background: #007acc;
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+
+        .priority-value {
+            font-size: 11px;
+            color: #888;
+            min-width: 30px;
+            text-align: right;
+        }
+
+        /* ========================================================================
+           TASK EXECUTION
+           ======================================================================== */
+        .task-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .task-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .task-item {
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .task-item.executing {
+            border-color: #ff6b35;
+        }
+
+        .task-item.completed {
+            border-color: #4ecdc4;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .task-description {
+            font-weight: 600;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .task-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .task-status.executing {
+            background: #5a3a2d;
+            color: #ff6b35;
+        }
+
+        .task-status.completed {
+            background: #2d5a3a;
+            color: #4ecdc4;
+        }
+
+        .task-status.failed {
+            background: #5a2d2d;
+            color: #ff6b35;
+        }
+
+        .task-teams {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* ========================================================================
+           ESTADO DEL SISTEMA
+           ======================================================================== */
+        .status-container {
+            padding: 20px;
+        }
+
+        .status-section {
+            margin-bottom: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .status-value {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+
+        .status-indicator.online {
+            background: #4ecdc4;
+        }
+
+        .status-indicator.offline {
+            background: #ff6b35;
+        }
+
+        /* ========================================================================
+           RESPONSIVE
+           ======================================================================== */
+        @media (max-width: 1200px) {
+            .ai-panel {
+                min-width: 350px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .browser-container {
+                flex-direction: column;
+            }
+            
+            .browser-panel {
+                flex: 1;
+                min-height: 50vh;
+            }
+            
+            .ai-panel {
+                flex: 1;
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="browser-container">
+        <!-- Panel Izquierdo: Navegador Web -->
+        <div class="browser-panel">
+            <div class="browser-header">
+                <div class="nav-buttons">
+                    <button class="nav-button" id="backButton" title="Atrás">←</button>
+                    <button class="nav-button" id="forwardButton" title="Adelante">→</button>
+                    <button class="nav-button" id="refreshButton" title="Actualizar">↻</button>
+                </div>
+                
+                <input type="text" class="url-bar" id="urlBar" placeholder="Buscar o navegar a...">
+                
+                <div class="browser-controls">
+                    <button class="control-button" id="bookmarkButton" title="Marcadores">⭐</button>
+                    <button class="control-button" id="settingsButton" title="Configuración">⚙️</button>
+                    <button class="control-button ai-control" id="aiButton" title="Silhouette Agent">🤖</button>
+                </div>
+            </div>
+            
+            <div class="browser-content">
+                <webview class="webview" id="webview" src="about:blank"></webview>
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Derecho: IA y Configuración -->
+        <div class="ai-panel">
+            <div class="ai-header">
+                <div class="ai-title">🤖 Silhouette Agent V4.0</div>
+                <div class="ai-tabs">
+                    <button class="ai-tab active" data-tab="chat">Chat</button>
+                    <button class="ai-tab" data-tab="config">Config</button>
+                    <button class="ai-tab" data-tab="teams">Equipos</button>
+                    <button class="ai-tab" data-tab="tasks">Tareas</button>
+                    <button class="ai-tab" data-tab="status">Estado</button>
+                </div>
+            </div>
+
+            <div class="ai-content">
+                <!-- Chat Tab -->
+                <div class="tab-content active" id="chatTab">
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="welcome-message">
+                                <div class="welcome-icon">🚀</div>
+                                <h3>Silhouette Browser V4.0</h3>
+                                <p>El navegador de IA más avanzado del mundo</p>
+                                <p>Escribe lo que quieres que haga mientras navegas</p>
+                            </div>
+                        </div>
+                        <div class="chat-input-container">
+                            <textarea class="chat-input" id="chatInput" placeholder="¿Qué quieres que haga?"></textarea>
+                            <button class="chat-send-button" id="sendButton" title="Enviar">→</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Config Tab -->
+                <div class="tab-content" id="configTab">
+                    <div class="config-container">
+                        <div class="config-section">
+                            <h3>🔑 APIs Requeridas</h3>
+                            
+                            <div class="api-card required">
+                                <div class="api-header">
+                                    <span class="api-name">OpenRouter</span>
+                                    <span class="api-status" id="openrouterStatus">Desconectado</span>
+                                </div>
+                                <input type="password" class="api-input" id="openrouterKey" placeholder="sk-or-v1-...">
+                                <div class="usage-indicator">Unlimited requests</div>
+                            </div>
+
+                            <div class="api-card required">
+                                <div class="api-header">
+                                    <span class="api-name">SERPER</span>
+                                    <span class="api-status" id="serperStatus">Desconectado</span>
+                                </div>
+                                <input type="password" class="api-input" id="serperKey" placeholder="API Key">
+                                <div class="usage-indicator">2,500 searches/month</div>
+                            </div>
+                        </div>
+
+                        <div class="config-section">
+                            <h3>🎨 APIs Opcionales</h3>
+                            
+                            <div class="api-card optional">
+                                <div class="api-header">
+                                    <span class="api-name">Unsplash</span>
+                                    <span class="api-status" id="unsplashStatus">Desconectado</span>
+                                </div>
+                                <input type="password" class="api-input" id="unsplashKey" placeholder="Access Key">
+                                <div class="usage-indicator">50 requests/hour</div>
+                                <div class="fallback-config">
+                                    <label class="fallback-label">Fallback:</label>
+                                    <select class="fallback-select" id="unsplashFallback">
+                                        <option value="local">Local Images</option>
+                                        <option value="pixabay">Pixabay</option>
+                                        <option value="disabled">Disabled</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="api-card optional">
+                                <div class="api-header">
+                                    <span class="api-name">Runway</span>
+                                    <span class="api-status" id="runwayStatus">Desconectado</span>
+                                </div>
+                                <input type="password" class="api-input" id="runwayKey" placeholder="API Key">
+                                <div class="usage-indicator">125 credits free</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Teams Tab -->
+                <div class="tab-content" id="teamsTab">
+                    <div class="config-container">
+                        <div class="config-section">
+                            <h3>🏢 Equipos V4.0 Activos</h3>
+                            <div class="teams-grid" id="teamsGrid">
+                                <!-- Los equipos se generarán dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks Tab -->
+                <div class="tab-content" id="tasksTab">
+                    <div class="task-container">
+                        <div class="task-messages" id="taskMessages">
+                            <div class="welcome-message">
+                                <div class="welcome-icon">⚡</div>
+                                <h3>Ejecución de Tareas</h3>
+                                <p>Las tareas ejecutadas aparecerán aquí</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Tab -->
+                <div class="tab-content" id="statusTab">
+                    <div class="status-container">
+                        <div class="status-section">
+                            <h3>🎯 Estado del Agente</h3>
+                            <div class="status-item">
+                                <span class="status-label">Agente Activo</span>
+                                <div>
+                                    <span class="status-value" id="agentStatus">Desactivado</span>
+                                    <span class="status-indicator offline" id="agentIndicator"></span>
+                                </div>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Control del Navegador</span>
+                                <div>
+                                    <span class="status-value" id="browserControl">Inactivo</span>
+                                    <span class="status-indicator offline" id="browserControlIndicator"></span>
+                                </div>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Equipos Activos</span>
+                                <span class="status-value" id="activeTeams">0/78</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Tareas Completadas</span>
+                                <span class="status-value" id="completedTasks">0</span>
+                            </div>
+                        </div>
+
+                        <div class="status-section">
+                            <h3>🔌 APIs Conectadas</h3>
+                            <div class="status-item">
+                                <span class="status-label">OpenRouter</span>
+                                <div>
+                                    <span class="status-value" id="openrouterConnected">No</span>
+                                    <span class="status-indicator offline" id="openrouterIndicator"></span>
+                                </div>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">SERPER</span>
+                                <div>
+                                    <span class="status-value" id="serperConnected">No</span>
+                                    <span class="status-indicator offline" id="serperIndicator"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Importar funcionalidades principales
+        const { ipcRenderer } = require('electron');
+        
+        class SilhouetteBrowserUI {
+            constructor() {
+                this.currentTab = 'chat';
+                this.chatHistory = [];
+                this.activeTaskId = null;
+                this.isInitialized = false;
+                
+                this.initializeUI();
+                this.setupEventListeners();
+                this.loadTeams();
+                this.initializeAgent();
+            }
+
+            async initializeUI() {
+                console.log('🎨 Initializing Silhouette Browser UI...');
+                this.updateStatus();
+            }
+
+            setupEventListeners() {
+                // Navegador
+                document.getElementById('urlBar').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.navigateToUrl(e.target.value);
+                    }
+                });
+
+                document.getElementById('backButton').addEventListener('click', () => this.goBack());
+                document.getElementById('forwardButton').addEventListener('click', () => this.goForward());
+                document.getElementById('refreshButton').addEventListener('click', () => this.refreshPage());
+
+                // Chat
+                document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                document.getElementById('sendButton').addEventListener('click', () => this.sendMessage());
+
+                // Tabs
+                document.querySelectorAll('.ai-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
+                });
+
+                // Configuración
+                this.setupConfigListeners();
+            }
+
+            setupConfigListeners() {
+                const apiInputs = [
+                    { id: 'openrouterKey', api: 'openrouter', statusEl: 'openrouterStatus' },
+                    { id: 'serperKey', api: 'serper', statusEl: 'serperStatus' },
+                    { id: 'unsplashKey', api: 'unsplash', statusEl: 'unsplashStatus' },
+                    { id: 'runwayKey', api: 'runway', statusEl: 'runwayStatus' }
+                ];
+
+                apiInputs.forEach(({ id, api, statusEl }) => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.addEventListener('change', () => this.saveApiKey(api, input.value));
+                        input.addEventListener('blur', () => this.testApiConnection(api));
+                    }
+                });
+            }
+
+            async initializeAgent() {
+                console.log('🤖 Initializing Silhouette Agent...');
+                
+                try {
+                    // Activar el agente
+                    const result = await ipcRenderer.invoke('agent:executeTask', {
+                        type: 'initialize',
+                        description: 'Inicializar Silhouette Agent con control del navegador'
+                    });
+
+                    if (result.success) {
+                        this.showMessage('agent', '✅ Silhouette Agent activado exitosamente');
+                        this.updateAgentStatus(true);
+                    } else {
+                        this.showMessage('agent', '❌ Error activando el agente: ' + result.error);
+                    }
+                } catch (error) {
+                    console.error('Error initializing agent:', error);
+                    this.showMessage('agent', '❌ Error inicializando el agente');
+                }
+            }
+
+            async sendMessage() {
+                const input = document.getElementById('chatInput');
+                const message = input.value.trim();
+                
+                if (!message) return;
+
+                // Añadir mensaje del usuario
+                this.showMessage('user', message);
+                input.value = '';
+
+                // Mostrar que está procesando
+                this.showMessage('executing', '🤖 Silhouette está procesando tu solicitud...');
+
+                try {
+                    const result = await ipcRenderer.invoke('agent:executeTask', {
+                        type: 'chat',
+                        description: message,
+                        context: this.getCurrentContext()
+                    });
+
+                    // Remover mensaje de procesamiento
+                    this.removeLastMessage();
+
+                    if (result.success) {
+                        this.showMessage('ai', this.formatResult(result.result));
+                        this.updateStatus();
+                    } else {
+                        this.showMessage('ai', '❌ Error: ' + result.error);
+                    }
+                } catch (error) {
+                    this.removeLastMessage();
+                    this.showMessage('ai', '❌ Error: ' + error.message);
+                }
+            }
+
+            showMessage(type, content) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}`;
+                messageDiv.textContent = content;
+                
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                if (type === 'user') {
+                    this.chatHistory.push({ type: 'user', content });
+                }
+            }
+
+            removeLastMessage() {
+                const messages = document.getElementById('chatMessages');
+                const lastMessage = messages.lastElementChild;
+                if (lastMessage && lastMessage.classList.contains('executing')) {
+                    lastMessage.remove();
+                }
+            }
+
+            switchTab(tabName) {
+                // Actualizar tabs activos
+                document.querySelectorAll('.ai-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+                // Mostrar contenido del tab
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`${tabName}Tab`).classList.add('active');
+
+                this.currentTab = tabName;
+            }
+
+            async loadTeams() {
+                try {
+                    const status = await ipcRenderer.invoke('agent:getTeamStatus');
+                    if (status.success) {
+                        this.renderTeams(status.teams);
+                    }
+                } catch (error) {
+                    console.error('Error loading teams:', error);
+                }
+            }
+
+            renderTeams(teams) {
+                const teamsGrid = document.getElementById('teamsGrid');
+                teamsGrid.innerHTML = '';
+
+                teams.forEach(team => {
+                    const teamCard = document.createElement('div');
+                    teamCard.className = `team-card ${team.active ? 'active' : 'inactive'}`;
+                    teamCard.innerHTML = `
+                        <div class="team-header">
+                            <span class="team-name">${team.name}</span>
+                            <label class="switch">
+                                <input type="checkbox" class="team-toggle" 
+                                       ${team.active ? 'checked' : ''} 
+                                       data-team-id="${team.id}">
+                            </label>
+                        </div>
+                        <div class="team-specialists">
+                            ${team.specialists.join(', ')}
+                        </div>
+                        <div class="team-priority">
+                            <span class="priority-label">Prioridad</span>
+                            <div class="priority-slider">
+                                <div class="priority-fill" style="width: ${team.weight * 100}%"></div>
+                            </div>
+                            <span class="priority-value">${Math.round(team.weight * 10)}/10</span>
+                        </div>
+                    `;
+                    teamsGrid.appendChild(teamCard);
+                });
+            }
+
+            updateStatus() {
+                // Esta función se implementaría para actualizar el estado del sistema
+                // usando la información del agente
+            }
+
+            updateAgentStatus(active) {
+                const statusEl = document.getElementById('agentStatus');
+                const indicatorEl = document.getElementById('agentIndicator');
+                
+                if (active) {
+                    statusEl.textContent = 'Activo';
+                    indicatorEl.className = 'status-indicator online';
+                } else {
+                    statusEl.textContent = 'Inactivo';
+                    indicatorEl.className = 'status-indicator offline';
+                }
+            }
+
+            getCurrentContext() {
+                const webview = document.getElementById('webview');
+                return {
+                    currentUrl: webview.src,
+                    userAgent: navigator.userAgent,
+                    timestamp: Date.now(),
+                    tabHistory: this.getTabHistory()
+                };
+            }
+
+            formatResult(result) {
+                if (typeof result === 'string') return result;
+                return JSON.stringify(result, null, 2);
+            }
+
+            // Métodos de navegación
+            async navigateToUrl(url) {
+                if (!url.startsWith('http://') && !url.startsWith('https://') && !url.includes('.')) {
+                    // Es una búsqueda
+                    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(url)}`;
+                    document.getElementById('webview').src = searchUrl;
+                    document.getElementById('urlBar').value = searchUrl;
+                } else {
+                    // Es una URL
+                    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                        url = 'https://' + url;
+                    }
+                    document.getElementById('webview').src = url;
+                    document.getElementById('urlBar').value = url;
+                }
+            }
+
+            async goBack() {
+                const webview = document.getElementById('webview');
+                if (webview.canGoBack()) {
+                    webview.goBack();
+                }
+            }
+
+            async goForward() {
+                const webview = document.getElementById('webview');
+                if (webview.canGoForward()) {
+                    webview.goForward();
+                }
+            }
+
+            async refreshPage() {
+                const webview = document.getElementById('webview');
+                webview.reload();
+            }
+        }
+
+        // Inicializar la aplicación
+        window.addEventListener('DOMContentLoaded', () => {
+            new SilhouetteBrowserUI();
+        });
+    </script>
+</body>
+</html>

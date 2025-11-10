@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - Silhouette Search</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .api-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+        .api-section h3 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            color: #4CAF50;
+        }
+        .api-section.optional h3 {
+            color: #FF9800;
+        }
+        .required {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 14px;
+        }
+        input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        .status.configured {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+        }
+        .status.not-configured {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+        }
+        .btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .btn.save {
+            background: #4CAF50;
+        }
+        .btn.save:hover {
+            background: #45a049;
+        }
+        .instructions {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .instructions h4 {
+            margin-bottom: 10px;
+            color: #FFD700;
+        }
+        .instructions a {
+            color: #87CEEB;
+            text-decoration: none;
+        }
+        .instructions a:hover {
+            text-decoration: underline;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .alert.info {
+            background: rgba(33, 150, 243, 0.3);
+            color: #2196F3;
+        }
+        .alert.success {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+        }
+        .alert.error {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Configuración de APIs</h1>
+            <p>Silhouette Search - Sistema de IA Unificado</p>
+        </div>
+        
+        <div class="alert info">
+            <strong>📋 Instrucciones:</strong> 
+            Obtén las claves API de los servicios correspondientes y configúralas aquí. 
+            Las APIs marcadas como "Requeridas" son necesarias para el funcionamiento básico.
+        </div>
+        
+        <div class="card">
+            <div class="instructions">
+                <h4>🔑 Cómo obtener las API Keys:</h4>
+                <ul>
+                    <li><strong>OPENROUTER:</strong> <a href="https://openrouter.ai/" target="_blank">openrouter.ai</a> - Chat con IA</li>
+                    <li><strong>SERPER:</strong> <a href="https://serper.dev/" target="_blank">serper.dev</a> - Búsqueda web</li>
+                    <li><strong>UNSPLASH:</strong> <a href="https://unsplash.com/developers" target="_blank">unsplash.com/developers</a> - Imágenes</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>🔑 APIs Requeridas</h2>
+            
+            <div class="api-section">
+                <h3>OPENROUTER - Chat con IA <span class="required">*</span></h3>
+                <div id="openrouter-status" class="status">Verificando...</div>
+                <div class="input-group">
+                    <label for="openrouter-key">OPENROUTER_API_KEY:</label>
+                    <input type="password" id="openrouter-key" placeholder="sk-or-v1-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                </div>
+                <div class="instructions">
+                    <strong>¿Cómo obtener?</strong>
+                    <ol>
+                        <li>Ve a <a href="https://openrouter.ai/" target="_blank">openrouter.ai</a></li>
+                        <li>Crea una cuenta gratuita</li>
+                        <li>Ve a Keys > Create Key</li>
+                        <li>Copia la clave (comienza con sk-or-v1-)</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="api-section">
+                <h3>SERPER - Búsqueda Web <span class="required">*</span></h3>
+                <div id="serper-status" class="status">Verificando...</div>
+                <div class="input-group">
+                    <label for="serper-key">SERPER_API_KEY:</label>
+                    <input type="password" id="serper-key" placeholder="tu-clave-serper-aqui">
+                </div>
+                <div class="instructions">
+                    <strong>¿Cómo obtener?</strong>
+                    <ol>
+                        <li>Ve a <a href="https://serper.dev/" target="_blank">serper.dev</a></li>
+                        <li>Regístrate con tu cuenta de Google</li>
+                        <li>Copia la API Key del dashboard</li>
+                        <li>2,500 búsquedas gratis por mes</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>🔧 APIs Opcionales</h2>
+            
+            <div class="api-section optional">
+                <h3>UNSPLASH - Búsqueda de Imágenes</h3>
+                <div id="unsplash-status" class="status">Verificando...</div>
+                <div class="input-group">
+                    <label for="unsplash-key">UNSPLASH_ACCESS_KEY:</label>
+                    <input type="password" id="unsplash-key" placeholder="tu-clave-unsplash-aqui">
+                </div>
+                <div class="instructions">
+                    <strong>¿Cómo obtener?</strong>
+                    <ol>
+                        <li>Ve a <a href="https://unsplash.com/developers" target="_blank">unsplash.com/developers</a></li>
+                        <li>Crea una nueva aplicación</li>
+                        <li>Copia el Access Key</li>
+                        <li>50 requests por hora gratis</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>💾 Acciones</h2>
+            <button class="btn save" onclick="saveConfig()">💾 Guardar Configuración</button>
+            <button class="btn" onclick="testConfig()">🧪 Probar APIs</button>
+            <button class="btn" onclick="resetConfig()">🔄 Restablecer</button>
+            <a href="/" class="btn">🏠 Volver al Inicio</a>
+        </div>
+        
+        <div id="message" style="display: none;"></div>
+    </div>
+    
+    <script>
+        // Cargar configuración existente
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config/status');
+                const data = await response.json();
+                
+                // Actualizar estado de APIs
+                updateApiStatus('openrouter', data.configured_status.OPENROUTER || { configured: false });
+                updateApiStatus('serper', data.configured_status.SERPER || { configured: false });
+                updateApiStatus('unsplash', data.configured_status.UNSPLASH || { configured: false });
+                
+            } catch (error) {
+                console.error('Error cargando configuración:', error);
+                showMessage('Error cargando configuración', 'error');
+            }
+        }
+        
+        function updateApiStatus(apiName, status) {
+            const statusElement = document.getElementById(`${apiName.toLowerCase()}-status`);
+            if (status.configured) {
+                statusElement.textContent = '✅ Configurado';
+                statusElement.className = 'status configured';
+            } else {
+                statusElement.textContent = '❌ No configurado';
+                statusElement.className = 'status not-configured';
+            }
+        }
+        
+        async function saveConfig() {
+            const config = {
+                OPENROUTER_API_KEY: document.getElementById('openrouter-key').value,
+                SERPER_API_KEY: document.getElementById('serper-key').value,
+                UNSPLASH_ACCESS_KEY: document.getElementById('unsplash-key').value
+            };
+            
+            // Validar que las APIs requeridas estén configuradas
+            if (!config.OPENROUTER_API_KEY || !config.SERPER_API_KEY) {
+                showMessage('Las APIs requeridas (OPENROUTER y SERPER) deben estar configuradas', 'error');
+                return;
+            }
+            
+            // Guardar en localStorage (simulado - en producción sería una API)
+            localStorage.setItem('silhouette-config', JSON.stringify(config));
+            showMessage('✅ Configuración guardada exitosamente', 'success');
+            
+            // Recargar estado
+            loadConfig();
+        }
+        
+        async function testConfig() {
+            showMessage('🧪 Probando APIs...', 'info');
+            
+            try {
+                // Probar búsqueda
+                const searchResponse = await fetch('/api/busqueda/real?q=test');
+                const searchData = await searchResponse.json();
+                
+                if (searchData.success) {
+                    showMessage('✅ SERPER API funciona correctamente', 'success');
+                } else {
+                    showMessage('❌ Error con SERPER API: ' + (searchData.error || 'Unknown'), 'error');
+                }
+                
+                // Probar chat
+                const chatResponse = await fetch('/api/chat/real', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: 'Hola, esto es una prueba' })
+                });
+                const chatData = await chatResponse.json();
+                
+                if (chatData.success) {
+                    showMessage('✅ OPENROUTER API funciona correctamente', 'success');
+                } else {
+                    showMessage('❌ Error con OPENROUTER API: ' + (chatData.error || 'Unknown'), 'error');
+                }
+                
+            } catch (error) {
+                showMessage('❌ Error probando APIs: ' + error.message, 'error');
+            }
+        }
+        
+        function resetConfig() {
+            if (confirm('¿Estás seguro de que quieres restablecer la configuración?')) {
+                localStorage.removeItem('silhouette-config');
+                document.querySelectorAll('input[type="password"]').forEach(input => input.value = '');
+                showMessage('✅ Configuración restablecida', 'success');
+                loadConfig();
+            }
+        }
+        
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.className = `alert ${type}`;
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Cargar configuración al iniciar
+        loadConfig();
+    </script>
+</body>
+</html>

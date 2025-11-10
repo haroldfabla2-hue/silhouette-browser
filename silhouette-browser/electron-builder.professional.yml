@@ -1,0 +1,262 @@
+# =============================================================================
+# SILHOUETTE BROWSER - ELECTRON BUILDER PROFESSIONAL CONFIG
+# Configuración avanzada para instaladores profesionales
+# =============================================================================
+
+# Configuración base
+appId: com.silhouette.browser
+productName: Silhouette Browser
+artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
+compression: maximum
+buildVersion: "${version}.${buildNumber}"
+
+# Información de la aplicación
+copyright: "Copyright © 2025 Silhouette. All rights reserved."
+author: MiniMax Agent
+license: MIT
+
+# Iconos (se generarán automáticamente)
+icon: "build/icons/icon.ico"  # Windows
+mac:
+  icon: "build/icons/icon.icns"  # macOS
+linux:
+  icon: "build/icons/icon.png"   # Linux
+
+# Configuración específica por plataforma
+mac:
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
+  identity: "Developer ID Application: MiniMax Agent"  # Para distribución oficial
+  gatekeeper-assess: false
+  hardened-runtime: true
+  entitlements: "build/entitlements.mac.plist"
+  entitlementsInherit: "build/entitlements.mac.plist"
+  provisioningProfile: "build/embedded.provisionprofile"
+  
+  # Configuración DMG profesional
+  dmg:
+    contents:
+      - x: 130
+        y: 220
+        type: file
+      - x: 410
+        y: 220
+        type: link
+        path: /Applications
+    icon: "build/icons/dmg-icon.icns"
+    iconSize: 80
+    window:
+      width: 540
+      height: 420
+    title: "${productName} ${version}"
+    format: ULFO
+    internetEnabled: false
+    download:
+      url: "https://github.com/haroldfabla2-hue/silhouette-search/releases/download/v${version}/${artifactName}"
+
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+        - arm64
+    - target: deb
+      arch:
+        - x64
+        - arm64
+    - target: rpm
+      arch:
+        - x64
+        - arm64
+    - target: snap
+      arch:
+        - x64
+    - target: pacman
+      arch:
+        - x64
+
+  # Configuración específica para AppImage (portátil)
+  appImage:
+    categories: ["Utility", "Development"]
+    desktop:
+      Name: Silhouette Browser
+      Comment: "Navegador con IA y 78 equipos especializados"
+      Keywords: "browser;ai;automation;agent;"
+      StartupWMClass: "silhouette-browser"
+    exec: "AppRun"
+    execArgs: ""
+    fileAssociations:
+      - ext: "silhouette"
+        name: "Silhouette Project"
+        description: "Proyecto de Silhouette Browser"
+        role: "Editor"
+    icon: "build/icons/icon.png"
+    notes: |
+      Silhouette Browser AppImage
+      ========================
+      
+      Para ejecutar: chmod +x Silhouette-Browser-*.AppImage && ./Silhouette-Browser-*.AppImage
+      
+      Esta es una versión portátil que no requiere instalación.
+      Todas las dependencias están incluidas.
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - ia32
+    - target: portable
+      arch:
+        - x64
+    - target: msi
+      arch:
+        - x64
+        - ia32
+
+  # Configuración NSIS profesional
+  nsis:
+    oneClick: false
+    perMachine: true
+    allowElevation: true
+    allowToChangeInstallationDirectory: true
+    installerIcon: "build/icons/installer-icon.ico"
+    uninstallerIcon: "build/icons/uninstaller-icon.ico"
+    installerHeaderIcon: "build/icons/installer-header.ico"
+    createDesktopShortcut: true
+    createStartMenuShortcut: true
+    shortcutName: "Silhouette Browser"
+    
+    # Script personalizado
+    include: "build/installer.nsh"
+    script: "build/installer-custom.nsh"
+    
+    # Instalación web (detección automática de arquitectura)
+    nsisWeb:
+      artifact: "${productName}-${version}-Web.${ext}"
+      download:
+        url: "https://github.com/haroldfabla2-hue/silhouette-search/releases/download/v${version}/${artifactName}"
+    
+    # Menú personalizado
+    menuCategory: "Internet"
+    
+    # Uninstallación
+    runAfterFinish: true
+    runAfterFinishParameters: []
+
+# Configuración de archivos y recursos
+files:
+  - "main-process/**/*"
+  - "renderer-process/**/*"
+  - "shared-services/**/*"
+  - "browser-engine/**/*"
+  - "node_modules/**/*"
+  - "package.json"
+  - "!**/node_modules/*/test/**/*"
+  - "!**/node_modules/*/docs/**/*"
+  - "!**/node_modules/*/.bin/**/*"
+
+# Recursos adicionales
+extraFiles:
+  - from: "build/resources"
+    to: "resources"
+    filter: ["**/*"]
+
+# Archivos extra (fuera del directorio de la app)
+extraResources:
+  - from: "build/extra"
+    to: "extra"
+
+# Archivos para desenpaquetar
+asarUnpack:
+  - "node_modules/electron-updater/**/*"
+  - "node_modules/playwright/**/*"
+
+# Configuración de dependencias nativas
+buildDependenciesFromSource: false
+nativeRebuilder: "sequential"
+nodeGypRebuild: true
+npmRebuild: true
+
+# Configuración de seguridad
+forceCodeSigning: false
+removePackageKeywords: true
+removePackageScripts: true
+
+# Configuración de compresión
+compression: maximum
+
+# Hooks personalizados
+beforeAllArtifactBuild:
+  - "node build/pre-build.js"
+  
+afterPack:
+  - "node build/after-pack.js"
+  
+afterSign:
+  - "node build/after-sign.js"
+  
+artifactBuildCompleted:
+  - "node build/after-artifact.js"
+
+# Configuración de lenguajes
+electronLanguages:
+  - "en"
+  - "es"
+  - "fr"
+  - "de"
+  - "zh-CN"
+  - "ja"
+  - "ru"
+
+# Configuración de firma de código
+mac:
+  identity: "Developer ID Application: MiniMax Agent"
+win:
+  certificateFile: null
+  certificatePassword: null
+  rfc3161TimeStampServer: http://timestamp.digicert.com
+  timeStampServer: http://timestamp.digicert.com
+
+# Configuración de auto-actualización
+publish:
+  provider: github
+  owner: haroldfabla2-hue
+  repo: silhouette-search
+  private: false
+  
+# Configuración de metadatos
+buildVersionMap:
+  travis: buildNumber
+  appveyor: buildNumber
+  circleci: buildNumber
+  drone: buildNumber
+  semaphore: buildNumber
+  gitlab: buildNumber
+  commitCount: true
+
+# Configuración de plataformas
+osxSign: null
+osxNotarize: null
+
+# Configuración de protocolo
+protocols:
+  - name: "Silhouette Browser Protocol"
+    schemes:
+      - "silhouette"
+
+# Configuración de asociaciones de archivos
+fileAssociations:
+  - ext: "silhouette"
+    name: "Silhouette Project"
+    description: "Proyecto de Silhouette Browser"
+    role: "Editor"
+    icon: "build/icons/file-association.ico"

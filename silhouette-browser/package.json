@@ -1,0 +1,83 @@
+{
+  "name": "silhouette-browser-v4",
+  "version": "1.0.0",
+  "description": "Silhouette Browser - Navegador con IA y 78 equipos especializados",
+  "main": "main-process/app-manager/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "NODE_ENV=development electron .",
+    "start": "NODE_ENV=production electron .",
+    "build": "npm run build-main && npm run build-renderer",
+    "build-main": "echo 'Building main process...'",
+    "build-renderer": "echo 'Building renderer process...'",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "jest",
+    "test:integration": "playwright test"
+  },
+  "build": {
+    "appId": "com.silhouette.browser",
+    "productName": "Silhouette Browser",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main-process/**/*",
+      "renderer-process/**/*",
+      "shared-services/**/*",
+      "browser-engine/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "playwright",
+        "to": "playwright"
+      }
+    ],
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.1",
+    "playwright": "^1.47.2",
+    "electron-serve": "^2.0.0",
+    "electron-store": "^8.2.0",
+    "electron-updater": "^6.3.0",
+    "node-pty": "^1.0.0",
+    "ws": "^8.17.1",
+    "vm2": "^3.9.19"
+  },
+  "devDependencies": {
+    "electron": "^32.2.0",
+    "electron-builder": "^25.1.8",
+    "electron-devtools-installer": "^3.2.0",
+    "jest": "^29.7.0",
+    "playwright-chromium": "^1.47.2",
+    "webpack": "^5.94.0",
+    "webpack-cli": "^5.1.4",
+    "html-webpack-plugin": "^5.6.0"
+  },
+  "keywords": [
+    "browser",
+    "ai",
+    "automation",
+    "agents",
+    "silhouette",
+    "chatgpt",
+    "perplexity"
+  ],
+  "author": "MiniMax Agent",
+  "license": "MIT"
+}

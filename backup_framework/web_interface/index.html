@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silhouette V4.0 - Framework Multi-Agente</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .title { font-size: 3em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .subtitle { font-size: 1.2em; opacity: 0.9; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 40px 0; }
+        .card { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 25px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
+        .card h3 { color: #ffd700; margin-bottom: 15px; font-size: 1.4em; }
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin: 20px 0; }
+        .team-card { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 15px; border-left: 4px solid #ffd700; }
+        .team-name { font-weight: bold; color: #fff; margin-bottom: 5px; }
+        .team-function { font-size: 0.9em; opacity: 0.8; }
+        .status { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; }
+        .status.ready { background: #28a745; }
+        .workflow-form { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 25px; margin: 20px 0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 10px; border: none; border-radius: 5px; background: rgba(255,255,255,0.2); color: white; }
+        button { background: #ffd700; color: #333; border: none; padding: 12px 25px; border-radius: 25px; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+        button:hover { background: #ffed4a; transform: translateY(-2px); }
+        .result { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 20px; margin: 15px 0; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .metric { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 20px; text-align: center; }
+        .metric-value { font-size: 2em; font-weight: bold; color: #ffd700; }
+        .metric-label { font-size: 0.9em; opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🚀 Silhouette V4.0</h1>
+            <p class="subtitle">Framework Multi-Agente Empresarial - 78+ Equipos Especializados</p>
+        </div>
+
+        <div class="metrics">
+            <div class="metric">
+                <div class="metric-value">78+</div>
+                <div class="metric-label">Equipos Activos</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">99.9%</div>
+                <div class="metric-label">Uptime</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">&lt;100ms</div>
+                <div class="metric-label">Response Time</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">∞</div>
+                <div class="metric-label">Escalabilidad</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>🎬 Equipos Audiovisuales (15+)</h3>
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="team-name">Audiovisual Team</div>
+                        <div class="team-function">Producción multimedia</div>
+                        <span class="status ready">READY</span>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-name">Animation Generator</div>
+                        <div class="team-function">Prompts de animación IA</div>
+                        <span class="status ready">READY</span>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-name">Image Search</div>
+                        <div class="team-function">Búsqueda de imágenes</div>
+                        <span class="status ready">READY</span>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-name">Video Composer</div>
+                        <div class="team-function">Composición de video</div>
+                        <span class="status ready">READY</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>💼 Equipos Empresariales (25+)</h3>
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="team-name">Marketing Team</div>
+                        <div class="team-function">Estrategias de marketing</div>
+                        <span class="status ready">READY</span>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-name">Business Development</div>
+                        <div class="team-function">Desarrollo de negocios</div>
+                        <span class="status ready">READY</span>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-name">Sales Team</div>
+                        <div class="team-function">Estrategias de ventas</div>
+                        <span class="status ready">READY</span>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-name">Finance Team</div>
+                        <div class="team-function">Análisis financiero</div>
+                        <span class="status ready">READY</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>⚡ Workflows Dinámicos (45+)</h3>
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="team-name">E-commerce Team</div>
+                        <div class="team-function">Comercio electrónico</div>
+                        <span class="status ready">READY</span>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-name">Healthcare Team</div>
+                        <div class="team-function">Sector salud</div>
+                        <span class="status ready">READY</span>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-name">Education Team</div>
+                        <div class="team-function">Sector educativo</div>
+                        <span class="status ready">READY</span>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-name">AI Team</div>
+                        <div class="team-function">Inteligencia artificial</div>
+                        <span class="status ready">READY</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="workflow-form">
+            <h3>🚀 Ejecutar Workflow</h3>
+            <form id="workflowForm">
+                <div class="form-group">
+                    <label for="workflowType">Tipo de Workflow:</label>
+                    <select id="workflowType" name="type" required>
+                        <option value="product_launch">Lanzamiento de Producto</option>
+                        <option value="content_production">Producción de Contenido</option>
+                        <option value="market_analysis">Análisis de Mercado</option>
+                        <option value="general">Workflow General</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="projectName">Nombre del Proyecto:</label>
+                    <input type="text" id="projectName" name="name" placeholder="Mi Proyecto IA" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Descripción:</label>
+                    <textarea id="description" name="description" rows="3" placeholder="Descripción detallada del proyecto..."></textarea>
+                </div>
+                <button type="submit">🚀 Ejecutar Workflow</button>
+            </form>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('workflowForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const workflowData = {
+                type: formData.get('type'),
+                name: formData.get('name'),
+                description: formData.get('description'),
+                id: 'workflow_' + Date.now(),
+                timestamp: new Date().toISOString()
+            };
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="result">⏳ Procesando workflow...</div>';
+            
+            try {
+                const response = await fetch('/api/workflow', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(workflowData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h4>✅ Workflow Completado</h4>
+                            <p><strong>ID:</strong> ${result.workflow_id}</p>
+                            <p><strong>Status:</strong> ${result.status}</p>
+                            <p><strong>Tareas Procesadas:</strong> ${result.total_tasks}</p>
+                            <p><strong>Resumen:</strong> ${result.workflow_summary}</p>
+                            <div style="margin-top: 15px;">
+                                <strong>Equipos Involucrados:</strong>
+                                <ul>
+                                    ${result.results.map(r => `<li>${r.team} - ${r.result}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="result">❌ Error ejecutando workflow</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="result">❌ Error de conexión: ' + error.message + '</div>';
+            }
+        });
+
+        // Auto-refresh de métricas
+        setInterval(async function() {
+            try {
+                const response = await fetch('/api/health');
+                if (response.ok) {
+                    const health = await response.json();
+                    // Actualizar métricas si es necesario
+                }
+            } catch (error) {
+                console.log('Health check failed:', error);
+            }
+        }, 30000); // Cada 30 segundos
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "team_name": "innovation-team",
+  "port": 8061,
+  "function": "Función general",
+  "category": "Innovación",
+  "apis_config": {
+    "OPENROUTER_API_KEY": "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",
+    "SERPER_API_KEY": "d74e67409311b703a73b1d30e457a2232194b154c296ee3c2ba16fb44d942"
+  },
+  "framework": "Silhouette V4.0",
+  "version": "1.0.0",
+  "environment": "production"
+}
