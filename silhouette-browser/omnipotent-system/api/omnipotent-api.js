@@ -95,6 +95,187 @@ export class SilhouetteOmnipotentAPI {
         return result;
     }
 
+    // =============================================================================
+    // MÉTODOS PARA GRUPOS DE PESTAÑAS
+    // =============================================================================
+
+    async createTabGroup(name, options = {}) {
+        this.log(`Creando grupo de pestañas: ${name}`);
+        
+        const result = await this.executeCommand(
+            `Crear un grupo de pestañas llamado "${name}" con las siguientes opciones: ${JSON.stringify(options)}`
+        );
+        
+        return result;
+    }
+
+    async createAgentTabGroup(taskData) {
+        this.log(`Creando grupo de agente para tarea: ${taskData.name || 'Sin nombre'}`);
+        
+        const result = await this.executeCommand(
+            `Crear un grupo de agente para ejecutar la siguiente tarea: ${JSON.stringify(taskData)}`
+        );
+        
+        return result;
+    }
+
+    async addTabToGroup(groupId, tabId) {
+        this.log(`Agregando pestaña ${tabId} al grupo ${groupId}`);
+        
+        const result = await this.executeCommand(
+            `Agregar la pestaña actual al grupo ${groupId}`
+        );
+        
+        return result;
+    }
+
+    async removeTabFromGroup(tabId) {
+        this.log(`Removiendo pestaña ${tabId} de su grupo`);
+        
+        const result = await this.executeCommand(
+            `Remover la pestaña actual de su grupo`
+        );
+        
+        return result;
+    }
+
+    async activateTabGroup(groupId) {
+        this.log(`Activando grupo de pestañas: ${groupId}`);
+        
+        const result = await this.executeCommand(
+            `Activar el grupo de pestañas ${groupId}`
+        );
+        
+        return result;
+    }
+
+    async executeAgentGroupTask(groupId, task) {
+        this.log(`Ejecutando tarea en grupo de agente: ${groupId}`);
+        
+        const result = await this.executeCommand(
+            `Ejecutar la siguiente tarea en el grupo de agente ${groupId}: ${JSON.stringify(task)}`
+        );
+        
+        return result;
+    }
+
+    async performAutoTabGrouping() {
+        this.log('Ejecutando agrupación automática de pestañas');
+        
+        const result = await this.executeCommand(
+            `Ejecutar agrupación automática de pestañas usando IA`
+        );
+        
+        return result;
+    }
+
+    async getTabGroups() {
+        this.log('Obteniendo lista de grupos de pestañas');
+        
+        const result = await this.executeCommand(
+            `Mostrar todos los grupos de pestañas existentes`
+        );
+        
+        return result;
+    }
+
+    // =============================================================================
+    // MÉTODOS COMBINADOS PARA IA OMNIPOTENTE
+    // =============================================================================
+
+    async organizeWorkspaceWithAI(purpose = 'automatic') {
+        this.log(`Organizando espacio de trabajo con IA: ${purpose}`);
+        
+        // Paso 1: Analizar pestañas actuales
+        const analysisResult = await this.executeCommand(
+            `Analizar todas las pestañas abiertas y determinar si necesitan agrupación`
+        );
+        
+        if (analysisResult.needsGrouping) {
+            // Paso 2: Crear grupos automáticamente
+            const groupingResult = await this.performAutoTabGrouping();
+            
+            // Paso 3: Nombrar grupos inteligentemente
+            const namingResult = await this.executeCommand(
+                `Nombrar los grupos creados de forma inteligente basándose en su contenido`
+            );
+            
+            return {
+                success: true,
+                analysis: analysisResult,
+                groups: groupingResult,
+                naming: namingResult
+            };
+        }
+        
+        return {
+            success: true,
+            message: 'No se requiere agrupación automática',
+            analysis: analysisResult
+        };
+    }
+
+    async createTaskFocusedGroup(taskDescription) {
+        this.log(`Creando grupo específico para tarea: ${taskDescription}`);
+        
+        // Crear grupo de agente para la tarea específica
+        const groupData = {
+            name: `Tarea: ${taskDescription.substring(0, 50)}...`,
+            description: `Grupo creado automáticamente para la tarea: ${taskDescription}`,
+            purpose: 'agent',
+            agentType: 'omnipotent',
+            taskDescription: taskDescription,
+            maxParallelTasks: 3,
+            automation: {
+                enabled: true,
+                workflows: ['navigate', 'extract', 'analyze']
+            },
+            coordination: {
+                agentMode: true,
+                maxParallelTasks: 3,
+                waitForCompletion: true,
+                failureStrategy: 'retry'
+            }
+        };
+        
+        const groupResult = await this.createAgentTabGroup(groupData);
+        
+        return {
+            success: true,
+            groupId: groupResult.groupId,
+            taskDescription: taskDescription
+        };
+    }
+
+    async intelligentTabManagement() {
+        this.log('Iniciando gestión inteligente de pestañas');
+        
+        // 1. Obtener estado actual
+        const currentState = await this.executeCommand('Mostrar estado actual de pestañas y grupos');
+        
+        // 2. Analizar patrones de uso
+        const patterns = await this.executeCommand(
+            'Analizar patrones de uso de pestañas para optimizar la organización'
+        );
+        
+        // 3. Recomendar optimizaciones
+        const recommendations = await this.executeCommand(
+            'Generar recomendaciones para optimizar la organización de pestañas'
+        );
+        
+        // 4. Ejecutar optimizaciones automáticas si son beneficiosas
+        if (recommendations.shouldAutoOptimize) {
+            await this.organizeWorkspaceWithAI('intelligent');
+        }
+        
+        return {
+            success: true,
+            currentState: currentState,
+            patterns: patterns,
+            recommendations: recommendations
+        };
+    }
+
     async getStatus() {
         if (!this.agent) {
             return { initialized: false };

@@ -1345,7 +1345,23 @@ Verifica la sintaxis del comando o intenta una acción más específica.
             'analyze-page': 'Analiza el contenido de esta página y resume los puntos principales'
         };
 
-        console.log('🚀 Silhouette Browser V5.3 - BrowserView Edition cargado');
+        // =============================================================================
+        // INICIALIZACIÓN DE GRUPOS DE PESTAÑAS
+        // =============================================================================
+        
+        // Crear instancia del gestor de grupos de pestañas
+        window.tabGroupsUI = new TabGroupsUIManager();
+        
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🗂️ Inicializando sistema de grupos de pestañas...');
+            await window.tabGroupsUI.initialize();
+        });
+
+        console.log('🚀 Silhouette Browser V5.3 - BrowserView Edition con Grupos de Pestañas cargado');
     </script>
+    
+    <!-- Scripts de funcionalidad -->
+    <script src="tab-groups-ui.js"></script>
 </body>
 </html>

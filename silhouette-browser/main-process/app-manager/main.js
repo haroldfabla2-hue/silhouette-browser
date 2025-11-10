@@ -122,7 +122,25 @@ class SilhouetteBrowser {
   async initializeBrowserCore() {
     console.log('🌐 Initializing browser core...');
     await this.browserCore.initialize();
+    
+    // Configurar event listeners para grupos de pestañas
+    this.setupTabGroupsEventHandlers();
+    
     console.log('✅ Browser core ready');
+  }
+
+  // =============================================================================
+  // TAB GROUPS EVENT HANDLERS
+  // =============================================================================
+  
+  setupTabGroupsEventHandlers() {
+    // Configurar listener para cambios de grupos de pestañas
+    this.browserCore.on('group-change', (eventType, data) => {
+      if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+        // Emitir evento al renderer
+        this.mainWindow.webContents.send(eventType, data);
+      }
+    });
   }
 
   async initializeAgentOrchestrator() {
@@ -528,6 +546,332 @@ class SilhouetteBrowser {
           error: error.message,
           timestamp: new Date().toISOString()
         };
+      }
+    });
+
+    // =============================================================================
+    // OMNIPOTENT TAB GROUPS METHODS
+    // =============================================================================
+
+    ipcMain.handle('omnipotent:createTabGroup', async (event, name, options) => {
+      try {
+        const groupId = await this.browserCore.createTabGroup(name, options);
+        return { success: true, groupId };
+      } catch (error) {
+        console.error('❌ Create tab group error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    ipcMain.handle('omnipotent:createAgentTabGroup', async (event, taskData) => {
+      try {
+        const groupId = await this.browserCore.createAgentTabGroup(taskData);
+        return { success: true, groupId };
+      } catch (error) {
+        console.error('❌ Create agent tab group error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    ipcMain.handle('omnipotent:addTabToGroup', async (event, groupId, tabId) => {
+      try {
+        await this.browserCore.addTabToGroup(groupId, tabId);
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Add tab to group error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    ipcMain.handle('omnipotent:removeTabFromGroup', async (event, tabId) => {
+      try {
+        await this.browserCore.removeTabFromGroup(tabId);
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Remove tab from group error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    ipcMain.handle('omnipotent:activateTabGroup', async (event, groupId) => {
+      try {
+        await this.browserCore.activateTabGroup(groupId);
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Activate tab group error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    ipcMain.handle('omnipotent:executeAgentGroupTask', async (event, groupId, task) => {
+      try {
+        const result = await this.browserCore.executeAgentGroupTask(groupId, task);
+        return { success: true, result };
+      } catch (error) {
+        console.error('❌ Execute agent group task error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    ipcMain.handle('omnipotent:performAutoTabGrouping', async () => {
+      try {
+        await this.browserCore.performAutoTabGrouping();
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Perform auto tab grouping error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    ipcMain.handle('omnipotent:getTabGroups', async () => {
+      try {
+        return this.browserCore.getAllTabGroups();
+      } catch (error) {
+        console.error('❌ Get tab groups error:', error);
+        return [];
+      }
+    });
+
+    // Métodos combinados para IA omnipotente
+    ipcMain.handle('omnipotent:organizeWorkspaceWithAI', async (event, purpose) => {
+      try {
+        // Implementar lógica de organización inteligente
+        return await this.omnipotentAPI.organizeWorkspaceWithAI(purpose);
+      } catch (error) {
+        console.error('❌ Organize workspace with AI error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    ipcMain.handle('omnipotent:createTaskFocusedGroup', async (event, taskDescription) => {
+      try {
+        return await this.omnipotentAPI.createTaskFocusedGroup(taskDescription);
+      } catch (error) {
+        console.error('❌ Create task focused group error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    ipcMain.handle('omnipotent:intelligentTabManagement', async () => {
+      try {
+        return await this.omnipotentAPI.intelligentTabManagement();
+      } catch (error) {
+        console.error('❌ Intelligent tab management error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // =============================================================================
+    // TAB GROUPS MANAGEMENT - GRUPOS DE PESTAÑAS
+    // =============================================================================
+
+    // Crear grupo de pestañas
+    ipcMain.handle('tabgroups:create', async (event, name, options) => {
+      try {
+        const groupId = await this.browserCore.createTabGroup(name, options);
+        return { success: true, groupId };
+      } catch (error) {
+        console.error('❌ Create tab group error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Crear grupo automático por IA
+    ipcMain.handle('tabgroups:createAi', async (event, categorizedTabs) => {
+      try {
+        const groupId = await this.browserCore.createAiTabGroup(categorizedTabs);
+        return { success: true, groupId };
+      } catch (error) {
+        console.error('❌ Create AI tab group error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Crear grupo de agente
+    ipcMain.handle('tabgroups:createAgent', async (event, taskData) => {
+      try {
+        const groupId = await this.browserCore.createAgentTabGroup(taskData);
+        return { success: true, groupId };
+      } catch (error) {
+        console.error('❌ Create agent tab group error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Eliminar grupo de pestañas
+    ipcMain.handle('tabgroups:delete', async (event, groupId) => {
+      try {
+        await this.browserCore.deleteTabGroup(groupId);
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Delete tab group error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Activar grupo de pestañas
+    ipcMain.handle('tabgroups:activate', async (event, groupId) => {
+      try {
+        await this.browserCore.activateTabGroup(groupId);
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Activate tab group error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Desactivar grupo de pestañas
+    ipcMain.handle('tabgroups:deactivate', async (event, groupId) => {
+      try {
+        await this.browserCore.deactivateTabGroup(groupId);
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Deactivate tab group error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Obtener todos los grupos
+    ipcMain.handle('tabgroups:getAll', async () => {
+      try {
+        return this.browserCore.getAllTabGroups();
+      } catch (error) {
+        console.error('❌ Get all tab groups error:', error);
+        return [];
+      }
+    });
+
+    // Obtener grupo específico
+    ipcMain.handle('tabgroups:get', async (event, groupId) => {
+      try {
+        return this.browserCore.getTabGroup(groupId);
+      } catch (error) {
+        console.error('❌ Get tab group error:', error);
+        return null;
+      }
+    });
+
+    // Obtener grupo activo
+    ipcMain.handle('tabgroups:getActive', async () => {
+      try {
+        return this.browserCore.getActiveTabGroup();
+      } catch (error) {
+        console.error('❌ Get active tab group error:', error);
+        return null;
+      }
+    });
+
+    // Agregar pestaña a grupo
+    ipcMain.handle('tabgroups:addTab', async (event, groupId, tabId) => {
+      try {
+        await this.browserCore.addTabToGroup(groupId, tabId);
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Add tab to group error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Remover pestaña de grupo
+    ipcMain.handle('tabgroups:removeTab', async (event, tabId) => {
+      try {
+        await this.browserCore.removeTabFromGroup(tabId);
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Remove tab from group error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Mover pestaña entre grupos
+    ipcMain.handle('tabgroups:moveTab', async (event, tabId, fromGroupId, toGroupId) => {
+      try {
+        await this.browserCore.moveTabToGroup(tabId, fromGroupId, toGroupId);
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Move tab between groups error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Ejecutar tarea en grupo de agente
+    ipcMain.handle('tabgroups:executeAgentTask', async (event, groupId, task) => {
+      try {
+        const result = await this.browserCore.executeAgentGroupTask(groupId, task);
+        return { success: true, result };
+      } catch (error) {
+        console.error('❌ Execute agent group task error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Agrupación automática por IA
+    ipcMain.handle('tabgroups:performAutoGrouping', async () => {
+      try {
+        await this.browserCore.performAutoTabGrouping();
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Perform auto tab grouping error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Habilitar/deshabilitar agrupación automática
+    ipcMain.handle('tabgroups:enableAiGrouping', async () => {
+      try {
+        this.browserCore.enableAiTabGrouping();
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Enable AI tab grouping error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    ipcMain.handle('tabgroups:disableAiGrouping', async () => {
+      try {
+        this.browserCore.disableAiTabGrouping();
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Disable AI tab grouping error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Exportar/Importar grupos
+    ipcMain.handle('tabgroups:export', async () => {
+      try {
+        return this.browserCore.exportTabGroups();
+      } catch (error) {
+        console.error('❌ Export tab groups error:', error);
+        return null;
+      }
+    });
+
+    ipcMain.handle('tabgroups:import', async (event, data) => {
+      try {
+        const success = await this.browserCore.importTabGroups(data);
+        return { success };
+      } catch (error) {
+        console.error('❌ Import tab groups error:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Obtener estadísticas de grupos
+    ipcMain.handle('tabgroups:getStats', async () => {
+      try {
+        return {
+          totalGroups: this.browserCore.getAllTabGroups().length,
+          totalTabsInGroups: this.browserCore.tabGroups.getTotalTabsInGroups(),
+          groupsByType: {
+            manual: this.browserCore.getTabGroupsByType('manual').length,
+            ai: this.browserCore.getTabGroupsByType('ai').length,
+            agent: this.browserCore.getTabGroupsByType('agent').length
+          }
+        };
+      } catch (error) {
+        console.error('❌ Get tab groups stats error:', error);
+        return { totalGroups: 0, totalTabsInGroups: 0, groupsByType: {} };
       }
     });
 

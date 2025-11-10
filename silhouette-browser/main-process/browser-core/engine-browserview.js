@@ -6,6 +6,7 @@
 import { BrowserWindow, BrowserView } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
+import TabGroupsManager from './tab-groups-manager.js';
 
 class BrowserCore {
   constructor() {
@@ -17,6 +18,7 @@ class BrowserCore {
     this.settings = new BrowserSettings();
     this.security = new SecurityManager();
     this.performance = new PerformanceMonitor();
+    this.tabGroups = new TabGroupsManager(this.tabManager);
   }
 
   // =============================================================================
@@ -29,6 +31,7 @@ class BrowserCore {
     try {
       // Inicializar gestores
       await this.tabManager.initialize();
+      await this.tabGroups.initialize();
       await this.history.initialize();
       await this.bookmarks.initialize();
       await this.settings.initialize();
@@ -330,6 +333,7 @@ class BrowserCore {
     this.onTabChange = null;
     this.onSecurityAlert = null;
     this.onPerformanceAlert = null;
+    this.onGroupChange = null;
   }
 
   on(event, callback) {
@@ -345,6 +349,9 @@ class BrowserCore {
         break;
       case 'performance-alert':
         this.onPerformanceAlert = callback;
+        break;
+      case 'group-change':
+        this.onGroupChange = callback;
         break;
     }
   }
@@ -387,10 +394,91 @@ class BrowserCore {
     return {
       windows: this.windows.size,
       tabs: this.tabManager.getTabCount(),
+      groups: this.tabGroups.getTabCount(),
       historyEntries: this.history.getEntryCount(),
       bookmarks: this.bookmarks.getBookmarkCount(),
       securityStatus: this.security.getStatus()
     };
+  }
+
+  // =============================================================================
+  // GRUPOS DE PESTAÑAS
+  // =============================================================================
+  
+  async createTabGroup(name, options = {}) {
+    return await this.tabGroups.createGroup(name, options);
+  }
+
+  async createAiTabGroup(categorizedTabs) {
+    return await this.tabGroups.createAiGroup(categorizedTabs);
+  }
+
+  async createAgentTabGroup(taskData) {
+    return await this.tabGroups.createAgentGroup(taskData);
+  }
+
+  async deleteTabGroup(groupId) {
+    return await this.tabGroups.deleteGroup(groupId);
+  }
+
+  async activateTabGroup(groupId) {
+    return await this.tabGroups.activateGroup(groupId);
+  }
+
+  async deactivateTabGroup(groupId) {
+    return await this.tabGroups.deactivateGroup(groupId);
+  }
+
+  async addTabToGroup(groupId, tabId) {
+    return await this.tabGroups.addTabToGroup(groupId, tabId);
+  }
+
+  async removeTabFromGroup(tabId) {
+    return await this.tabGroups.removeTabFromGroup(tabId);
+  }
+
+  async moveTabToGroup(tabId, fromGroupId, toGroupId) {
+    return await this.tabGroups.moveTabToGroup(tabId, fromGroupId, toGroupId);
+  }
+
+  async performAutoTabGrouping() {
+    return await this.tabGroups.performAutoGrouping();
+  }
+
+  async executeAgentGroupTask(groupId, task) {
+    return await this.tabGroups.executeAgentGroupTask(groupId, task);
+  }
+
+  getAllTabGroups() {
+    return this.tabGroups.getAllGroups();
+  }
+
+  getTabGroup(groupId) {
+    return this.tabGroups.getGroup(groupId);
+  }
+
+  getActiveTabGroup() {
+    return this.tabGroups.getActiveGroup();
+  }
+
+  getTabGroupsByType(type) {
+    return this.tabGroups.getGroupsByType(type);
+  }
+
+  enableAiTabGrouping() {
+    this.tabGroups.enableAiGrouping();
+  }
+
+  disableAiTabGrouping() {
+    this.tabGroups.disableAiGrouping();
+  }
+
+  exportTabGroups() {
+    return this.tabGroups.exportGroups();
+  }
+
+  async importTabGroups(data) {
+    return await this.tabGroups.importGroups(data);
   }
 
   // =============================================================================
@@ -518,6 +606,12 @@ class TabManager {
     }
 
     console.log(`📑 Pestaña con BrowserView creada: ${tabId} en ventana ${windowId}`);
+    
+    // Notificar creación de pestaña al sistema de grupos para agrupación automática
+    if (this.browserCore.tabGroups) {
+      this.browserCore.tabGroups.setupAutoGroupingEvents();
+    }
+    
     return tabId;
   }
 

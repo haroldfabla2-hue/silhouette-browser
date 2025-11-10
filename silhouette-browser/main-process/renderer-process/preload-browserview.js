@@ -69,6 +69,57 @@ contextBridge.exposeInMainWorld('silhouetteAPI', {
     executeInTab: (tabId, task) => ipcRenderer.invoke('omnipotent:executeInTab', tabId, task),
     getAllTabs: () => ipcRenderer.invoke('omnipotent:getAllTabs'),
     switchAndExecute: (tabId, task) => ipcRenderer.invoke('omnipotent:switchAndExecute', tabId, task),
+    
+    // Nuevos métodos omnipotentes para grupos de pestañas
+    createTabGroup: (name, options) => ipcRenderer.invoke('omnipotent:createTabGroup', name, options),
+    createAgentTabGroup: (taskData) => ipcRenderer.invoke('omnipotent:createAgentTabGroup', taskData),
+    addTabToGroup: (groupId, tabId) => ipcRenderer.invoke('omnipotent:addTabToGroup', groupId, tabId),
+    removeTabFromGroup: (tabId) => ipcRenderer.invoke('omnipotent:removeTabFromGroup', tabId),
+    activateTabGroup: (groupId) => ipcRenderer.invoke('omnipotent:activateTabGroup', groupId),
+    executeAgentGroupTask: (groupId, task) => ipcRenderer.invoke('omnipotent:executeAgentGroupTask', groupId, task),
+    performAutoTabGrouping: () => ipcRenderer.invoke('omnipotent:performAutoTabGrouping'),
+    getTabGroups: () => ipcRenderer.invoke('omnipotent:getTabGroups'),
+    
+    // Métodos combinados para IA omnipotente
+    organizeWorkspaceWithAI: (purpose) => ipcRenderer.invoke('omnipotent:organizeWorkspaceWithAI', purpose),
+    createTaskFocusedGroup: (taskDescription) => ipcRenderer.invoke('omnipotent:createTaskFocusedGroup', taskDescription),
+    intelligentTabManagement: () => ipcRenderer.invoke('omnipotent:intelligentTabManagement'),
+  },
+
+  // Tab Groups Management - Grupos de Pestañas
+  tabGroups: {
+    // Crear grupos
+    create: (name, options) => ipcRenderer.invoke('tabgroups:create', name, options),
+    createAi: (categorizedTabs) => ipcRenderer.invoke('tabgroups:createAi', categorizedTabs),
+    createAgent: (taskData) => ipcRenderer.invoke('tabgroups:createAgent', taskData),
+    
+    // Gestionar grupos
+    delete: (groupId) => ipcRenderer.invoke('tabgroups:delete', groupId),
+    activate: (groupId) => ipcRenderer.invoke('tabgroups:activate', groupId),
+    deactivate: (groupId) => ipcRenderer.invoke('tabgroups:deactivate', groupId),
+    
+    // Obtener grupos
+    getAll: () => ipcRenderer.invoke('tabgroups:getAll'),
+    get: (groupId) => ipcRenderer.invoke('tabgroups:get', groupId),
+    getActive: () => ipcRenderer.invoke('tabgroups:getActive'),
+    getStats: () => ipcRenderer.invoke('tabgroups:getStats'),
+    
+    // Gestionar pestañas en grupos
+    addTab: (groupId, tabId) => ipcRenderer.invoke('tabgroups:addTab', groupId, tabId),
+    removeTab: (tabId) => ipcRenderer.invoke('tabgroups:removeTab', tabId),
+    moveTab: (tabId, fromGroupId, toGroupId) => ipcRenderer.invoke('tabgroups:moveTab', tabId, fromGroupId, toGroupId),
+    
+    // Ejecución de tareas en grupos de agente
+    executeAgentTask: (groupId, task) => ipcRenderer.invoke('tabgroups:executeAgentTask', groupId, task),
+    
+    // Agrupación automática
+    performAutoGrouping: () => ipcRenderer.invoke('tabgroups:performAutoGrouping'),
+    enableAiGrouping: () => ipcRenderer.invoke('tabgroups:enableAiGrouping'),
+    disableAiGrouping: () => ipcRenderer.invoke('tabgroups:disableAiGrouping'),
+    
+    // Exportar/Importar
+    export: () => ipcRenderer.invoke('tabgroups:export'),
+    import: (data) => ipcRenderer.invoke('tabgroups:import', data),
   },
 
   // Event listeners para actualizaciones de tabs
@@ -98,6 +149,36 @@ contextBridge.exposeInMainWorld('silhouetteAPI', {
 
   onPageLoadError: (callback) => {
     ipcRenderer.on('page:load-error', (event, data) => callback(data));
+  },
+
+  // Event listeners para grupos de pestañas
+  onGroupCreated: (callback) => {
+    ipcRenderer.on('group:created', (event, data) => callback(data));
+  },
+
+  onGroupDeleted: (callback) => {
+    ipcRenderer.on('group:deleted', (event, data) => callback(data));
+  },
+
+  onGroupActivated: (callback) => {
+    ipcRenderer.on('group:activated', (event, data) => callback(data));
+  },
+
+  onGroupDeactivated: (callback) => {
+    ipcRenderer.on('group:deactivated', (event, data) => callback(data));
+  },
+
+  onTabAddedToGroup: (callback) => {
+    ipcRenderer.on('group:tab-added', (event, data) => callback(data));
+  },
+
+  onTabRemovedFromGroup: (callback) => {
+    ipcRenderer.on('group:tab-removed', (event, data) => callback(data));
+  },
+
+  onTabMovedBetweenGroups: (callback) => {
+    ipcRenderer.on('group:tab-moved', (event, data) => callback(data));
+  },
   },
 
   onPageTitleUpdated: (callback) => {
