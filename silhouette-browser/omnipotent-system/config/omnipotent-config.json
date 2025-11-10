@@ -1,0 +1,51 @@
+{
+  "version": "5.3.0",
+  "engines": {
+    "playwright": {
+      "enabled": true,
+      "mode": "mcp",
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "headless": false,
+      "timeout": 30000
+    },
+    "snowfort": {
+      "enabled": true,
+      "web": true,
+      "electron": true,
+      "autoSnapshots": true,
+      "screenshotQuality": 80
+    }
+  },
+  "ai": {
+    "models": {
+      "navigation": "gpt-4-turbo",
+      "interaction": "claude-3-5-sonnet",
+      "extraction": "gpt-4-turbo",
+      "reasoning": "claude-3-5-sonnet",
+      "planning": "gpt-4-turbo"
+    },
+    "context": {
+      "maxTokens": 128000,
+      "temperature": 0.1,
+      "includeHistory": true,
+      "learningMode": true
+    }
+  },
+  "safety": {
+    "promptInjectionDefense": true,
+    "actionConfirmations": true,
+    "riskAssessment": true,
+    "auditLog": true,
+    "confirmationThreshold": 0.7
+  },
+  "ui": {
+    "controlPanel": true,
+    "liveExecution": true,
+    "taskHistory": true,
+    "safetyConfirmations": true
+  }
+}

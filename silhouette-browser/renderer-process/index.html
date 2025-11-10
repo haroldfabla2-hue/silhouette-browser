@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Silhouette Browser V5.1 - Plataforma de Desarrollo Nativa Integrada</title>
+    <title>Silhouette Browser V5.2 - Plataforma de Desarrollo Nativa Integrada</title>
+    
+    <!-- Theme System CSS -->
+    <link rel="stylesheet" href="theme-system/themes.css">
+    
     <style>
         * {
             margin: 0;
@@ -1301,6 +1305,92 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* ========================================================================
+           WIDGET SYSTEM STYLES
+           ======================================================================== */
+        
+        .widget-item {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .widget-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 122, 204, 0.2);
+            border-color: var(--primary-color) !important;
+        }
+        
+        .widget-item:active {
+            cursor: grabbing;
+            transform: scale(1.02);
+        }
+        
+        .widget-preset {
+            transition: all 0.2s ease;
+        }
+        
+        .widget-preset:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .widget-preset:active {
+            cursor: grabbing;
+            transform: scale(0.98);
+        }
+        
+        .theme-modal {
+            backdrop-filter: blur(10px);
+        }
+        
+        .theme-option {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .theme-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 122, 204, 0.2);
+        }
+        
+        .widget-canvas {
+            background: var(--background-primary);
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .widget-canvas.drag-over {
+            border-color: var(--primary-color);
+            background: var(--background-secondary);
+        }
+        
+        /* Drag and drop visual feedback */
+        .widget-dragging {
+            opacity: 0.7;
+            transform: rotate(3deg);
+        }
+        
+        .drop-zone-active {
+            border-color: var(--success-color) !important;
+            background: var(--success-color) !important;
+            opacity: 0.1;
+        }
+        
+        /* Responsive widget canvas */
+        @media (max-width: 768px) {
+            .widget-canvas {
+                min-height: 300px;
+            }
+            
+            .widget-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -1343,6 +1433,7 @@
                     <button class="ai-tab" data-tab="teams">Equipos</button>
                     <button class="ai-tab" data-tab="routing">Enrutamiento</button>
                     <button class="ai-tab" data-tab="monitoring">Monitor</button>
+                    <button class="ai-tab" data-tab="widgets">🎨 Widgets</button>
                     <button class="ai-tab" data-tab="general">General</button>
                     <button class="ai-tab" data-tab="tasks">Tareas</button>
                 </div>
@@ -1752,6 +1843,44 @@
                     </div>
                 </div>
 
+                <!-- Widgets Tab -->
+                <div class="tab-content" id="widgetsTab">
+                    <div class="config-container">
+                        <div class="config-section">
+                            <h3>🎨 Constructor de Widgets</h3>
+                            <p style="color: var(--text-muted); margin-bottom: 20px;">Crea y personaliza widgets para tu dashboard</p>
+                            
+                            <div style="display: grid; grid-template-columns: 250px 1fr; gap: 20px; min-height: 500px;">
+                                <!-- Widget Presets -->
+                                <div style="background: var(--background-tertiary); border-radius: 8px; padding: 20px;">
+                                    <h4 style="color: var(--primary-color); margin-bottom: 15px;">📦 Widgets Disponibles</h4>
+                                    <div id="widgetPresets" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                                </div>
+                                
+                                <!-- Widget Canvas -->
+                                <div style="background: var(--background-tertiary); border-radius: 8px; padding: 20px; position: relative;">
+                                    <h4 style="color: var(--primary-color); margin-bottom: 15px;">🎯 Área de Widgets</h4>
+                                    <div id="widgetCanvas" style="min-height: 400px; background: var(--background-primary); border: 2px dashed var(--border-color); border-radius: 8px; position: relative; overflow: hidden;">
+                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--text-muted); text-align: center; pointer-events: none;">
+                                            <div style="font-size: 48px; margin-bottom: 10px;">🎨</div>
+                                            <div>Arrastra widgets aquí</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Widget Controls -->
+                            <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="btn btn-primary" onclick="saveWidgetLayout()">💾 Guardar Layout</button>
+                                <button class="btn btn-secondary" onclick="loadWidgetLayout()">📂 Cargar Layout</button>
+                                <button class="btn btn-secondary" onclick="exportWidgetConfig()">📤 Exportar</button>
+                                <button class="btn btn-secondary" onclick="importWidgetConfig()">📥 Importar</button>
+                                <button class="btn btn-danger" onclick="clearAllWidgets()">🗑️ Limpiar Todo</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- General Tab -->
                 <div class="tab-content" id="generalTab">
                     <div class="config-container">
@@ -1875,6 +2004,16 @@
 
     <!-- Contenedor de Notificaciones -->
     <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- Theme and Widget System Scripts -->
+    <script src="theme-system/theme-detection.js"></script>
+    <script src="theme-system/theme-manager.js"></script>
+    <script src="theme-system/theme-switcher.js"></script>
+    <script src="widget-system/layout-manager.js"></script>
+    <script src="widget-system/widget-manager.js"></script>
+    <script src="widget-system/widget-presets.js"></script>
+    <script src="widget-system/widget-config.js"></script>
+    <script src="widget-system/widget-builder.js"></script>
 
     <script>
         // ========================================================================
@@ -2659,13 +2798,290 @@
         // ========================================================================
         
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize theme system first
+            if (window.ThemeManager) {
+                window.themeManager = new ThemeManager();
+                window.themeManager.initialize();
+                
+                // Update theme button
+                const currentTheme = window.themeManager.getCurrentTheme();
+                updateThemeButton(currentTheme);
+            }
+            
+            // Initialize widget system
+            if (window.WidgetBuilder) {
+                window.widgetBuilder = new WidgetBuilder();
+                initializeWidgetSystem();
+            }
+            
             ui = new SilhouetteAdvancedUI();
             
             // Mostrar mensaje de bienvenida
             setTimeout(() => {
-                ui.showNotification('¡Bienvenido a Silhouette Browser V4.0! Configura tus APIs para comenzar.', 'info', '🎉 Inicialización');
+                ui.showNotification('¡Bienvenido a Silhouette Browser V5.2! Ahora con temas y widgets personalizados.', 'info', '🎉 Inicialización V5.2');
             }, 1000);
         });
+
+        // ========================================================================
+        // THEME AND WIDGET SYSTEM FUNCTIONS
+        // ========================================================================
+        
+        // Theme Modal Functions
+        function openThemeModal() {
+            const modal = document.getElementById('themeSwitcherModal');
+            const selector = document.getElementById('themeSelector');
+            
+            if (window.themeManager) {
+                const themes = window.themeManager.getAvailableThemes();
+                selector.innerHTML = themes.map(theme => `
+                    <div onclick="selectTheme('${theme.id}')" 
+                         style="padding: 15px; border-radius: 8px; cursor: pointer; text-align: center; 
+                                transition: all 0.3s; border: 2px solid transparent;"
+                         onmouseover="this.style.borderColor='var(--primary-color)'" 
+                         onmouseout="this.style.borderColor='transparent'">
+                        <div style="font-size: 24px; margin-bottom: 5px;">${theme.icon}</div>
+                        <div style="color: var(--text-primary); font-weight: 500;">${theme.name}</div>
+                    </div>
+                `).join('');
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        function closeThemeModal() {
+            document.getElementById('themeSwitcherModal').style.display = 'none';
+        }
+        
+        function selectTheme(themeId) {
+            if (window.themeManager) {
+                window.themeManager.applyTheme(themeId);
+            }
+            updateThemeButton(themeId);
+            closeThemeModal();
+        }
+        
+        function updateThemeButton(themeId) {
+            const themeButton = document.getElementById('themeButton');
+            const themeIcons = {
+                'dark': '🌙',
+                'light': '☀️',
+                'blue': '🔵',
+                'purple': '🟣',
+                'red': '🔴',
+                'green': '🟢'
+            };
+            themeButton.textContent = themeIcons[themeId] || '🎨';
+        }
+        
+        function createCustomTheme() {
+            ui.showNotification('Editor de temas personalizados próximamente', 'info');
+        }
+        
+        // Widget System Functions
+        function initializeWidgetSystem() {
+            if (window.widgetBuilder) {
+                const widgetCanvas = document.getElementById('widgetCanvas');
+                const widgetPresets = document.getElementById('widgetPresets');
+                
+                // Load available widget presets
+                const presets = window.widgetBuilder.getAvailablePresets();
+                widgetPresets.innerHTML = presets.map(preset => `
+                    <div draggable="true" 
+                         data-widget-type="${preset.type}"
+                         ondragstart="handleWidgetDragStart(event)"
+                         style="padding: 12px; background: var(--background-primary); 
+                                border-radius: 6px; cursor: grab; border: 1px solid var(--border-color);
+                                transition: all 0.2s;"
+                         onmouseover="this.style.borderColor='var(--primary-color)'" 
+                         onmouseout="this.style.borderColor='var(--border-color)'">
+                        <div style="font-size: 18px; margin-bottom: 5px;">${preset.icon}</div>
+                        <div style="color: var(--text-primary); font-size: 12px; font-weight: 500;">${preset.name}</div>
+                    </div>
+                `).join('');
+                
+                // Setup canvas drag and drop
+                widgetCanvas.ondragover = handleWidgetDragOver;
+                widgetCanvas.ondrop = handleWidgetDrop;
+                widgetCanvas.ondragleave = handleWidgetDragLeave;
+            }
+        }
+        
+        function handleWidgetDragStart(event) {
+            event.dataTransfer.setData('widget-type', event.target.dataset.widgetType);
+        }
+        
+        function handleWidgetDragOver(event) {
+            event.preventDefault();
+            event.target.style.background = 'var(--background-secondary)';
+        }
+        
+        function handleWidgetDragLeave(event) {
+            event.target.style.background = 'var(--background-primary)';
+        }
+        
+        function handleWidgetDrop(event) {
+            event.preventDefault();
+            event.target.style.background = 'var(--background-primary)';
+            
+            const widgetType = event.dataTransfer.getData('widget-type');
+            if (window.widgetBuilder && widgetType) {
+                const widget = window.widgetBuilder.createWidget(widgetType, {
+                    position: { x: 0, y: 0, w: 4, h: 3 }
+                });
+                
+                // Add widget to canvas
+                addWidgetToCanvas(widget);
+                ui.showNotification(`Widget ${widgetType} creado`, 'success');
+            }
+        }
+        
+        function addWidgetToCanvas(widget) {
+            const canvas = document.getElementById('widgetCanvas');
+            const widgetElement = document.createElement('div');
+            widgetElement.className = 'widget-item';
+            widgetElement.style.cssText = `
+                position: absolute;
+                top: ${widget.position.y * 20}px;
+                left: ${widget.position.x * 25}px;
+                width: ${widget.position.w * 25}px;
+                height: ${widget.position.h * 20}px;
+                background: var(--background-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                padding: 10px;
+                cursor: move;
+                z-index: 10;
+            `;
+            
+            widgetElement.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="color: var(--text-primary); font-weight: 500;">${widget.name}</span>
+                    <button onclick="removeWidget(this)" style="background: none; border: none; color: var(--text-muted); cursor: pointer;">×</button>
+                </div>
+                <div style="color: var(--text-secondary); font-size: 12px;">
+                    ${widget.description || 'Widget personalizado'}
+                </div>
+            `;
+            
+            canvas.appendChild(widgetElement);
+            
+            // Remove placeholder if exists
+            const placeholder = canvas.querySelector('div[style*="text-align: center"]');
+            if (placeholder) {
+                placeholder.remove();
+            }
+        }
+        
+        function removeWidget(button) {
+            const widget = button.closest('.widget-item');
+            widget.remove();
+            ui.showNotification('Widget eliminado', 'info');
+        }
+        
+        function saveWidgetLayout() {
+            const canvas = document.getElementById('widgetCanvas');
+            const widgets = [];
+            
+            canvas.querySelectorAll('.widget-item').forEach(widgetEl => {
+                const style = window.getComputedStyle(widgetEl);
+                widgets.push({
+                    name: widgetEl.querySelector('span').textContent,
+                    position: {
+                        x: parseInt(style.left) / 25,
+                        y: parseInt(style.top) / 20,
+                        w: parseInt(style.width) / 25,
+                        h: parseInt(style.height) / 20
+                    }
+                });
+            });
+            
+            localStorage.setItem('silhouetteWidgetLayout', JSON.stringify(widgets));
+            ui.showNotification('Layout guardado exitosamente', 'success');
+        }
+        
+        function loadWidgetLayout() {
+            const saved = localStorage.getItem('silhouetteWidgetLayout');
+            if (saved) {
+                const widgets = JSON.parse(saved);
+                const canvas = document.getElementById('widgetCanvas');
+                canvas.innerHTML = ''; // Clear existing widgets
+                
+                widgets.forEach(widgetData => {
+                    const widget = window.widgetBuilder.createWidget('custom', {
+                        name: widgetData.name,
+                        position: widgetData.position
+                    });
+                    addWidgetToCanvas(widget);
+                });
+                
+                ui.showNotification('Layout cargado exitosamente', 'success');
+            } else {
+                ui.showNotification('No hay layout guardado', 'warning');
+            }
+        }
+        
+        function exportWidgetConfig() {
+            const config = {
+                layout: localStorage.getItem('silhouetteWidgetLayout'),
+                theme: document.body.getAttribute('data-theme'),
+                timestamp: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'silhouette-widgets.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            ui.showNotification('Configuración exportada', 'success');
+        }
+        
+        function importWidgetConfig() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const config = JSON.parse(e.target.result);
+                            if (config.layout) {
+                                localStorage.setItem('silhouetteWidgetLayout', config.layout);
+                                if (config.theme) {
+                                    document.body.setAttribute('data-theme', config.theme);
+                                    updateThemeButton(config.theme);
+                                }
+                                loadWidgetLayout();
+                                ui.showNotification('Configuración importada exitosamente', 'success');
+                            }
+                        } catch (error) {
+                            ui.showNotification('Error importando configuración: ' + error.message, 'error');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+        
+        function clearAllWidgets() {
+            if (confirm('¿Estás seguro de que quieres eliminar todos los widgets?')) {
+                const canvas = document.getElementById('widgetCanvas');
+                canvas.innerHTML = `
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                                color: var(--text-muted); text-align: center; pointer-events: none;">
+                        <div style="font-size: 48px; margin-bottom: 10px;">🎨</div>
+                        <div>Arrastra widgets aquí</div>
+                    </div>
+                `;
+                localStorage.removeItem('silhouetteWidgetLayout');
+                ui.showNotification('Todos los widgets eliminados', 'success');
+            }
+        }
 
         // Atajos de teclado globales
         document.addEventListener('keydown', (e) => {
@@ -2690,6 +3106,10 @@
                     case '5':
                         e.preventDefault();
                         ui.switchTab('teams');
+                        break;
+                    case '6':
+                        e.preventDefault();
+                        ui.switchTab('widgets');
                         break;
                 }
             }
