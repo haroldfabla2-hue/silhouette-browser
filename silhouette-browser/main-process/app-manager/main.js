@@ -14,6 +14,7 @@ import { SecurityLayer } from '../security-layer/security-manager.js';
 import { AgentOrchestrator } from '../agent-orchestrator/orchestrator.js';
 import { ExtensionEngine } from '../extension-engine/extension-manager.js';
 import { BrowserCore } from '../browser-core/engine.js';
+import { NativeIntegrationCore } from '../native-integration/native-integration-core.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,6 +26,7 @@ class SilhouetteBrowser {
     this.agentOrchestrator = new AgentOrchestrator();
     this.extensionEngine = new ExtensionEngine();
     this.browserCore = new BrowserCore();
+    this.nativeIntegration = new NativeIntegrationCore();
     
     // Configuración de la aplicación
     this.config = {
@@ -40,7 +42,7 @@ class SilhouetteBrowser {
   // =============================================================================
   
   async initialize() {
-    console.log('🚀 Initializing Silhouette Browser V4.0...');
+    console.log('🚀 Initializing Silhouette Browser V5.1 - Native Integration Revolution...');
     
     try {
       // Configurar seguridad
@@ -54,6 +56,9 @@ class SilhouetteBrowser {
       
       // Inicializar motor de extensiones
       await this.initializeExtensions();
+      
+      // Inicializar integración nativa V5.1
+      await this.initializeNativeIntegration();
       
       // Configurar IPC handlers
       this.setupIpcHandlers();
@@ -123,6 +128,12 @@ class SilhouetteBrowser {
     console.log('🔧 Initializing extension engine...');
     await this.extensionEngine.initialize();
     console.log('✅ Extension engine ready');
+  }
+
+  async initializeNativeIntegration() {
+    console.log('⚡ Initializing native integration V5.1...');
+    await this.nativeIntegration.initialize();
+    console.log('✅ Native integration ready - Browser + Live Server + Docker + Testing + Sharing');
   }
 
   // =============================================================================
