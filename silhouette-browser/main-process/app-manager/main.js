@@ -13,7 +13,7 @@ import { fileURLToPath } from 'url';
 import { SecurityLayer } from '../security-layer/security-manager.js';
 import { AgentOrchestrator } from '../agent-orchestrator/orchestrator.js';
 import { ExtensionEngine } from '../extension-engine/extension-manager.js';
-import { BrowserCore } from '../browser-core/engine.js';
+import { BrowserCore } from '../browser-core/engine-browserview.js';
 import { NativeIntegrationCore } from '../native-integration/native-integration-core.js';
 import { SilhouetteOmnipotentAPI } from '../../omnipotent-system/api/omnipotent-api.js';
 
@@ -202,10 +202,10 @@ class SilhouetteBrowser {
       // En desarrollo, cargar desde webpack dev server
       await this.mainWindow.loadURL('http://localhost:8080');
     } else {
-      // En producción, cargar desde build local
+      // En producción, cargar desde build local (BrowserView edition)
       await this.mainWindow.loadURL(
         url.format({
-          pathname: path.join(__dirname, 'renderer-process/index.html'),
+          pathname: path.join(__dirname, 'renderer-process/index-browserview.html'),
           protocol: 'file:',
           slashes: true
         })
@@ -237,13 +237,13 @@ class SilhouetteBrowser {
   setupIpcHandlers() {
     console.log('📡 Setting up IPC handlers...');
     
-    // Browser control
+    // Browser control con BrowserView
     ipcMain.handle('browser:navigate', async (event, url) => {
-      return await this.browserCore.navigate(url);
+      return await this.browserCore.navigateTo(url);
     });
 
     ipcMain.handle('browser:getCurrentUrl', async () => {
-      return await this.browserCore.getCurrentUrl();
+      return this.browserCore.getCurrentUrl();
     });
 
     ipcMain.handle('browser:goBack', async () => {
@@ -252,6 +252,105 @@ class SilhouetteBrowser {
 
     ipcMain.handle('browser:goForward', async () => {
       return await this.browserCore.goForward();
+    });
+
+    ipcMain.handle('browser:refresh', async () => {
+      return await this.browserCore.refresh();
+    });
+
+    // BrowserView Tab Management
+    ipcMain.handle('browser:createTab', async (event, url, options) => {
+      return await this.browserCore.createNewTab(url, options);
+    });
+
+    ipcMain.handle('browser:closeTab', async (event, tabId) => {
+      return await this.browserCore.closeTab(tabId);
+    });
+
+    ipcMain.handle('browser:switchToTab', async (event, tabId) => {
+      return await this.browserCore.switchToTab(tabId);
+    });
+
+    ipcMain.handle('browser:reloadTab', async (event, tabId) => {
+      return await this.browserCore.reloadTab(tabId);
+    });
+
+    ipcMain.handle('browser:getActiveTabs', async () => {
+      return this.browserCore.getActiveTabs();
+    });
+
+    ipcMain.handle('browser:getTabCount', async () => {
+      return this.browserCore.tabManager.getTabCount();
+    });
+
+    ipcMain.handle('browser:getCurrentTitle', async () => {
+      return this.browserCore.getCurrentTitle();
+    });
+
+    ipcMain.handle('browser:getStats', async () => {
+      return this.browserCore.getStats();
+    });
+
+    ipcMain.handle('browser:getPerformanceMetrics', async () => {
+      return this.browserCore.getPerformanceMetrics();
+    });
+
+    // Búsqueda web
+    ipcMain.handle('browser:performSearch', async (event, query, engine) => {
+      return await this.browserCore.performSearch(query, engine);
+    });
+
+    // Bookmarks
+    ipcMain.handle('browser:addBookmark', async (event, title, url) => {
+      return await this.browserCore.addBookmark(title, url);
+    });
+
+    ipcMain.handle('browser:removeBookmark', async (event, bookmarkId) => {
+      return await this.browserCore.removeBookmark(bookmarkId);
+    });
+
+    ipcMain.handle('browser:getBookmarks', async () => {
+      return await this.browserCore.getBookmarks();
+    });
+
+    // Historial
+    ipcMain.handle('browser:getHistory', async (event, limit) => {
+      return await this.browserCore.getHistory(limit);
+    });
+
+    ipcMain.handle('browser:clearHistory', async () => {
+      return await this.browserCore.clearHistory();
+    });
+
+    // Configuración
+    ipcMain.handle('browser:getSettings', async () => {
+      return this.browserCore.getSettings();
+    });
+
+    ipcMain.handle('browser:updateSetting', async (event, key, value) => {
+      return await this.browserCore.updateSetting(key, value);
+    });
+
+    // Seguridad
+    ipcMain.handle('browser:checkSecurity', async (event, url) => {
+      return await this.browserCore.checkSecurity(url);
+    });
+
+    ipcMain.handle('browser:getSecurityStatus', async () => {
+      return this.browserCore.getSecurityStatus();
+    });
+
+    // Window management
+    ipcMain.handle('window:createNewWindow', async (event, url) => {
+      return await this.browserCore.createNewWindow(url);
+    });
+
+    ipcMain.handle('window:getWindowList', async () => {
+      return this.browserCore.getWindowList();
+    });
+
+    ipcMain.handle('window:isWindowActive', async (event, windowId) => {
+      return this.browserCore.isWindowActive(windowId);
     });
 
     // Agent control
@@ -276,18 +375,24 @@ class SilhouetteBrowser {
       return await this.extensionEngine.getInstalledExtensions();
     });
 
-    // Omnipotent System Control
+    // Omnipotent System Control (actualizado para BrowserView)
     ipcMain.handle('omnipotent:executeCommand', async (event, commandData) => {
       try {
-        const { command, webviewUrl, webviewId } = commandData;
-        console.log('🤖 Executing omnipotent command:', command);
+        const { command, tabId } = commandData;
+        console.log('🤖 Executing omnipotent command in BrowserView:', command);
+        
+        // Obtener tab activo si no se especifica
+        let targetTabId = tabId;
+        if (!targetTabId && this.mainWindow) {
+          targetTabId = this.browserCore.tabManager.activeTabId;
+        }
         
         // Ejecutar comando en el contexto del navegador
         const result = await this.omnipotentAPI.executeOmnipotentTask({
           description: command,
-          webviewContext: {
-            url: webviewUrl,
-            id: webviewId
+          browserViewContext: {
+            tabId: targetTabId,
+            windowId: 'main'
           }
         });
         
@@ -321,9 +426,19 @@ class SilhouetteBrowser {
     ipcMain.handle('omnipotent:navigateAndExtract', async (event, data) => {
       try {
         const { url, task } = data;
-        console.log('🤖 Navigating and extracting:', url, task);
+        console.log('🤖 Navigating and extracting in BrowserView:', url, task);
         
-        const result = await this.omnipotentAPI.autonomousNavigation(url, task);
+        // Crear nueva tab y ejecutar en ella
+        const tabId = await this.browserCore.createNewTab(url, { active: true });
+        
+        const result = await this.omnipotentAPI.executeOmnipotentTask({
+          description: task,
+          browserViewContext: {
+            tabId,
+            windowId: 'main'
+          }
+        });
+        
         return {
           success: true,
           result: result,
@@ -331,6 +446,83 @@ class SilhouetteBrowser {
         };
       } catch (error) {
         console.error('❌ Navigate and extract error:', error);
+        return {
+          success: false,
+          error: error.message,
+          timestamp: new Date().toISOString()
+        };
+      }
+    });
+
+    // Nuevos métodos omnipotentes para BrowserView
+    ipcMain.handle('omnipotent:getActiveTab', async () => {
+      try {
+        return this.browserCore.tabManager.activeTabId;
+      } catch (error) {
+        console.error('❌ Get active tab error:', error);
+        return null;
+      }
+    });
+
+    ipcMain.handle('omnipotent:executeInTab', async (event, tabId, task) => {
+      try {
+        console.log(`🤖 Executing task in tab ${tabId}:`, task);
+        
+        const result = await this.omnipotentAPI.executeOmnipotentTask({
+          description: task,
+          browserViewContext: {
+            tabId,
+            windowId: 'main'
+          }
+        });
+        
+        return {
+          success: true,
+          result: result,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        console.error(`❌ Execute in tab error:`, error);
+        return {
+          success: false,
+          error: error.message,
+          timestamp: new Date().toISOString()
+        };
+      }
+    });
+
+    ipcMain.handle('omnipotent:getAllTabs', async () => {
+      try {
+        return this.browserCore.getActiveTabs();
+      } catch (error) {
+        console.error('❌ Get all tabs error:', error);
+        return [];
+      }
+    });
+
+    ipcMain.handle('omnipotent:switchAndExecute', async (event, tabId, task) => {
+      try {
+        console.log(`🤖 Switching to tab ${tabId} and executing:`, task);
+        
+        // Cambiar a la tab
+        await this.browserCore.switchToTab(tabId);
+        
+        // Ejecutar tarea
+        const result = await this.omnipotentAPI.executeOmnipotentTask({
+          description: task,
+          browserViewContext: {
+            tabId,
+            windowId: 'main'
+          }
+        });
+        
+        return {
+          success: true,
+          result: result,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        console.error(`❌ Switch and execute error:`, error);
         return {
           success: false,
           error: error.message,
@@ -359,7 +551,70 @@ class SilhouetteBrowser {
       return await shell.openExternal(url);
     });
 
-    console.log('✅ IPC handlers configured');
+    // Notifications
+    ipcMain.handle('notification:show', async (event, message, type) => {
+      // Implementar sistema de notificaciones
+      console.log(`📢 Notification [${type}]:`, message);
+      return true;
+    });
+
+    ipcMain.handle('notification:hide', async () => {
+      // Ocultar notificaciones
+      return true;
+    });
+
+    // Dialogs
+    ipcMain.handle('dialog:showOpenDialog', async (event, options) => {
+      const result = await dialog.showOpenDialog(this.mainWindow, options);
+      return result;
+    });
+
+    // App info
+    ipcMain.handle('app:getVersion', async () => {
+      return app.getVersion();
+    });
+
+    // Config management
+    ipcMain.handle('config:getAll', async () => {
+      // Retornar configuración completa
+      return {
+        version: app.getVersion(),
+        platform: process.platform,
+        isDev: this.config.isDev
+      };
+    });
+
+    // Integrar eventos del TabManager con IPC para comunicación al renderer
+    this.setupTabManagerEventBridge();
+
+    console.log('✅ IPC handlers configured for BrowserView');
+  }
+
+  // =============================================================================
+  // EVENT BRIDGE PARA TAB MANAGER
+  // =============================================================================
+  
+  setupTabManagerEventBridge() {
+    console.log('🔗 Setting up TabManager event bridge...');
+    
+    // Bridge events from TabManager to renderer
+    if (this.browserCore && this.browserCore.tabManager) {
+      const tabManager = this.browserCore.tabManager;
+      
+      // Override notifyTabUpdated to send IPC events
+      const originalNotifyTabUpdated = tabManager.notifyTabUpdated.bind(tabManager);
+      tabManager.notifyTabUpdated = (tabId, eventType, data) => {
+        // Send IPC event to renderer
+        if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+          this.mainWindow.webContents.send(`tab:${eventType}`, { tabId, ...data });
+        }
+        
+        // Call original method
+        if (originalNotifyTabUpdated) {
+          originalNotifyTabUpdated(tabId, eventType, data);
+        }
+      };
+    }
   }
 
   // =============================================================================

@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silhouette Browser V5.3 - Chromium Real con IA Omnipotente</title>
+    
+    <!-- Theme System CSS -->
+    <link rel="stylesheet" href="theme-system/themes.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #007acc;
+            --secondary-color: #4ecdc4;
+            --accent-color: #ff6b35;
+            --success-color: #2d5a2d;
+            --warning-color: #ff9500;
+            --error-color: #ff4444;
+            --background-primary: #1a1a1a;
+            --background-secondary: #2d2d2d;
+            --background-tertiary: #333333;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #888888;
+            --border-color: #444444;
+            --border-accent: #007acc;
+        }
+
+        [data-theme="light"] {
+            --background-primary: #ffffff;
+            --background-secondary: #f8f9fa;
+            --background-tertiary: #e9ecef;
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .browser-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ========================================================================
+           PANEL IZQUIERDO - NAVEGADOR WEB CON BROWSERVIEW
+           ======================================================================== */
+        .browser-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            background: var(--background-secondary);
+            border-right: 1px solid var(--border-color);
+        }
+
+        .browser-header {
+            background: var(--background-tertiary);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .nav-button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--background-tertiary);
+            color: var(--text-muted);
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .nav-button:hover {
+            background: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .address-bar {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .address-input {
+            flex: 1;
+            height: 36px;
+            padding: 0 12px;
+            background: var(--background-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .address-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .search-button {
+            height: 36px;
+            padding: 0 16px;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .search-button:hover {
+            background: #005999;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-button {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--background-tertiary);
+            color: var(--text-muted);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .control-button:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .control-button.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* ========================================================================
+           TABS CON BROWSERVIEW
+           ======================================================================== */
+        .tabs-container {
+            background: var(--background-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 8px;
+            display: flex;
+            align-items: end;
+            min-height: 36px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .tabs-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--background-secondary);
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            margin-right: 4px;
+            min-width: 120px;
+            max-width: 200px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .tab.active {
+            background: var(--background-primary);
+            color: var(--text-primary);
+            border-color: var(--primary-color);
+        }
+
+        .tab:hover:not(.active) {
+            background: var(--background-primary);
+            color: var(--text-primary);
+        }
+
+        .tab-favicon {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .tab-title {
+            flex: 1;
+            font-size: 13px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .tab-loading {
+            width: 16px;
+            height: 16px;
+            margin-left: 8px;
+            border: 2px solid var(--text-muted);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        .tab.loading .tab-loading {
+            display: block;
+        }
+
+        .tab-close {
+            width: 16px;
+            height: 16px;
+            margin-left: 6px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 12px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tab-close:hover {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .tab-new {
+            background: var(--background-secondary);
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            width: 36px;
+            height: 36px;
+            margin-left: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .tab-new:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .tab-new::before {
+            content: '+';
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ========================================================================
+           BROWSER VIEW CONTAINER
+           ======================================================================== */
+        .browser-content {
+            flex: 1;
+            position: relative;
+            background: var(--background-primary);
+        }
+
+        .browser-view-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        /* No webview here anymore - BrowserView is managed by main process */
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--background-primary);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .browser-status {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1001;
+            display: none;
+        }
+
+        .browser-status.show {
+            display: block;
+        }
+
+        /* ========================================================================
+           PANEL DERECHO: IA Y CONFIGURACIÓN
+           ======================================================================== */
+        .ai-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--background-secondary);
+        }
+
+        .ai-header {
+            background: var(--background-tertiary);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .ai-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .ai-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .ai-tab {
+            padding: 6px 12px;
+            background: var(--background-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .ai-tab.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .ai-tab:hover {
+            background: var(--background-primary);
+            color: var(--text-primary);
+        }
+
+        .ai-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .tab-content {
+            display: none;
+            height: 100%;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ========================================================================
+           OMNIPOTENT CONTROL TOTAL
+           ======================================================================== */
+        .config-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .omnipotent-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            background: var(--background-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .omnipotent-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .omnipotent-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
+        }
+
+        .omnipotent-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .omnipotent-results {
+            background: var(--background-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .omnipotent-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--background-tertiary);
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success-color);
+        }
+
+        .status-indicator.error {
+            background: var(--error-color);
+        }
+
+        .status-indicator.warning {
+            background: var(--warning-color);
+        }
+
+        /* ========================================================================
+           RESPONSIVE DESIGN
+           ======================================================================== */
+        @media (max-width: 1024px) {
+            .browser-container {
+                flex-direction: column;
+            }
+            
+            .browser-panel {
+                flex: none;
+                height: 50vh;
+            }
+            
+            .ai-panel {
+                flex: none;
+                height: 50vh;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ai-tabs {
+                flex-direction: column;
+            }
+            
+            .ai-tab {
+                text-align: center;
+            }
+            
+            .tabs-container {
+                padding: 0 4px;
+            }
+            
+            .tab {
+                min-width: 80px;
+                padding: 6px 8px;
+            }
+            
+            .tab-title {
+                font-size: 11px;
+            }
+        }
+
+        /* ========================================================================
+           NOTIFICATIONS
+           ======================================================================== */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--background-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px 20px;
+            color: var(--text-primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-color: var(--success-color);
+        }
+
+        .notification.error {
+            border-color: var(--error-color);
+        }
+
+        .notification.warning {
+            border-color: var(--warning-color);
+        }
+
+        /* ========================================================================
+           CUSTOM SCROLLBARS
+           ======================================================================== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="browser-container">
+        <!-- Panel Izquierdo: Navegador Web con BrowserView -->
+        <div class="browser-panel">
+            <!-- Toolbar del navegador -->
+            <div class="browser-header">
+                <div class="nav-buttons">
+                    <button class="nav-button" id="backButton" title="Atrás">←</button>
+                    <button class="nav-button" id="forwardButton" title="Adelante">→</button>
+                    <button class="nav-button" id="refreshButton" title="Recargar">↻</button>
+                    <button class="nav-button" id="homeButton" title="Inicio">🏠</button>
+                </div>
+                
+                <div class="address-bar">
+                    <input type="text" class="address-input" id="addressInput" placeholder="Buscar o introducir dirección web">
+                    <button class="search-button" id="searchButton">Buscar</button>
+                </div>
+                
+                <div class="control-buttons">
+                    <button class="control-button" id="bookmarkButton" title="Marcadores">⭐</button>
+                    <button class="control-button" id="settingsButton" title="Configuración">⚙️</button>
+                    <button class="control-button ai-control" id="aiButton" title="Silhouette Agent">🤖</button>
+                </div>
+            </div>
+            
+            <!-- Tabs con BrowserView -->
+            <div class="tabs-container" id="tabsContainer">
+                <!-- Los tabs se generan dinámicamente -->
+                <div class="tab-new" id="newTabButton" title="Nueva pestaña"></div>
+            </div>
+            
+            <!-- Contenido del navegador (BrowserView controlado por main process) -->
+            <div class="browser-content">
+                <div class="browser-view-container" id="browserViewContainer">
+                    <!-- BrowserView instances son manejadas por main process -->
+                </div>
+                
+                <!-- Loading overlay -->
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="loading-spinner"></div>
+                </div>
+                
+                <!-- Status del navegador -->
+                <div class="browser-status" id="browserStatus">
+                    Listo para navegar con Chromium Real
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Derecho: IA y Configuración -->
+        <div class="ai-panel">
+            <div class="ai-header">
+                <div class="ai-title">🚀 Silhouette Browser V5.3 - Chromium Real con IA Omnipotente</div>
+                <div class="ai-tabs">
+                    <button class="ai-tab active" data-tab="omnipotent">🤖 Control Total</button>
+                    <button class="ai-tab" data-tab="ide-sandbox">⚡ IDE Nativo</button>
+                    <button class="ai-tab" data-tab="chat">Chat</button>
+                    <button class="ai-tab" data-tab="models">Modelos</button>
+                    <button class="ai-tab" data-tab="apis">APIs</button>
+                    <button class="ai-tab" data-tab="teams">Equipos</button>
+                    <button class="ai-tab" data-tab="routing">Enrutamiento</button>
+                    <button class="ai-tab" data-tab="monitoring">Monitor</button>
+                    <button class="ai-tab" data-tab="widgets">🎨 Widgets</button>
+                    <button class="ai-tab" data-tab="general">General</button>
+                    <button class="ai-tab" data-tab="tasks">Tareas</button>
+                </div>
+            </div>
+            
+            <div class="ai-content">
+                <!-- Control Total Omnipotente -->
+                <div class="tab-content active" id="omnipotentTab">
+                    <div class="config-container">
+                        <div class="omnipotent-status">
+                            <div class="status-indicator" id="omnipotentStatusIndicator"></div>
+                            <span id="omnipotentStatusText">Sistema Omnipotente con BrowserView activo</span>
+                        </div>
+                        
+                        <textarea 
+                            class="omnipotent-input" 
+                            id="omnipotentCommand" 
+                            placeholder="Ejecuta comandos naturales en las pestañas de Chromium:
+
+• 'Ve a Google y busca noticias de IA'
+• 'Extrae todos los enlaces de esta página'  
+• 'Navega a GitHub y analiza proyectos de React'
+• 'Busca restaurantes en Madrid y extrae teléfonos'
+• 'Realiza búsqueda de productos en Amazon'
+
+Con BrowserView tienes control total de pestañas reales de Chromium."
+                        ></textarea>
+                        
+                        <button class="omnipotent-button" onclick="executeOmnipotentCommand()">
+                            <span>🚀</span>
+                            <span>Ejecutar Comando Omnipotente</span>
+                        </button>
+                        
+                        <div class="omnipotent-results" id="omnipotentResults">
+                            Sistema Omnipotente con BrowserView listo. Las pestañas de Chromium están bajo control total.
+                            
+Estado actual:
+• Navegador: Chromium Real
+• Tabs: Control nativo de BrowserView
+• IA: Omnipotente integrada
+• Seguridad: Verificación de URLs
+• Rendimiento: Optimizado para múltiples instancias
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IDE Nativo -->
+                <div class="tab-content" id="ide-sandboxTab">
+                    <div class="config-container">
+                        <h3>⚡ IDE Nativo con BrowserView</h3>
+                        <p>Desarrolla, prueba y despliega directamente en las pestañas de Chromium.</p>
+                        
+                        <div style="background: var(--background-primary); padding: 15px; border-radius: 6px; margin-top: 15px;">
+                            <h4>Capacidades con BrowserView:</h4>
+                            <ul style="margin-left: 20px; line-height: 1.6;">
+                                <li>Debugging en pestañas reales de Chromium</li>
+                                <li>Hot reload automático en BrowserView</li>
+                                <li>API calls directas desde tabs de desarrollo</li>
+                                <li>Live preview en múltiples pestañas</li>
+                                <li>Control granular de cada instancia de Chromium</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Otros tabs se mantienen igual... -->
+                <div class="tab-content" id="chatTab">
+                    <div class="config-container">
+                        <h3>Chat de IA</h3>
+                        <p>Conversa con la IA omnipotente.</p>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="modelsTab">
+                    <div class="config-container">
+                        <h3>Modelos de IA</h3>
+                        <p>Configura y selecciona modelos de IA.</p>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="apisTab">
+                    <div class="config-container">
+                        <h3>APIs</h3>
+                        <p>Gestiona integraciones de APIs.</p>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="teamsTab">
+                    <div class="config-container">
+                        <h3>Equipos</h3>
+                        <p>Organiza equipos de agentes especializados.</p>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="routingTab">
+                    <div class="config-container">
+                        <h3>Enrutamiento</h3>
+                        <p>Configura enrutamiento y navegación.</p>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="monitoringTab">
+                    <div class="config-container">
+                        <h3>Monitor</h3>
+                        <p>Monitoreo en tiempo real de BrowserView y navegación.</p>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="widgetsTab">
+                    <div class="config-container">
+                        <h3>🎨 Widgets</h3>
+                        <p>Personaliza la interfaz con widgets dinámicos.</p>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="generalTab">
+                    <div class="config-container">
+                        <h3>General</h3>
+                        <p>Configuración general del navegador.</p>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tasksTab">
+                    <div class="config-container">
+                        <h3>Tareas</h3>
+                        <p>Gestión de tareas y flujos de trabajo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificaciones -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Estado global del navegador con BrowserView
+        let currentUrl = 'about:blank';
+        let currentTitle = 'Nueva pestaña';
+        let browserStats = {};
+        let activeTabs = [];
+        let omnipotentExecuting = false;
+
+        // ========================================================================
+        // INICIALIZACIÓN
+        // ========================================================================
+        
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Silhouette Browser V5.3 - BrowserView Edition inicializando...');
+            
+            initializeBrowserView();
+            setupEventListeners();
+            setupOmnipotentSystem();
+            setupTabEventListeners();
+            loadInitialData();
+        });
+
+        // ========================================================================
+        // INICIALIZACIÓN DE BROWSERVIEW
+        // ========================================================================
+        
+        async function initializeBrowserView() {
+            try {
+                console.log('🌐 Inicializando sistema de BrowserView...');
+                
+                // Obtener tabs activas
+                activeTabs = await silhouetteAPI.browser.getActiveTabs();
+                console.log('📊 Tabs cargadas:', activeTabs.length);
+                
+                // Si no hay tabs, crear una nueva
+                if (activeTabs.length === 0) {
+                    const newTabId = await silhouetteAPI.browser.createTab('about:blank', { active: true });
+                    console.log('📄 Nueva tab creada:', newTabId);
+                    await loadTabs();
+                }
+                
+                // Cargar datos iniciales
+                await loadBrowserStats();
+                await loadCurrentTab();
+                
+                // Actualizar UI
+                updateOmnipotentStatus('ready', 'Sistema BrowserView inicializado');
+                
+                console.log('✅ Sistema BrowserView listo');
+                
+            } catch (error) {
+                console.error('❌ Error inicializando BrowserView:', error);
+                updateOmnipotentStatus('error', 'Error al inicializar BrowserView');
+                showNotification('Error al inicializar el navegador', 'error');
+            }
+        }
+
+        // ========================================================================
+        // GESTIÓN DE TABS CON BROWSERVIEW
+        // ========================================================================
+        
+        async function loadTabs() {
+            try {
+                activeTabs = await silhouetteAPI.browser.getActiveTabs();
+                renderTabs();
+                console.log('🔄 Tabs actualizadas:', activeTabs.length);
+            } catch (error) {
+                console.error('❌ Error cargando tabs:', error);
+            }
+        }
+
+        function renderTabs() {
+            const tabsContainer = document.getElementById('tabsContainer');
+            const newTabButton = document.getElementById('newTabButton');
+            
+            // Limpiar tabs existentes (excepto el botón de nueva tab)
+            tabsContainer.querySelectorAll('.tab').forEach(tab => tab.remove());
+            
+            // Renderizar cada tab
+            activeTabs.forEach(tab => {
+                const tabElement = createTabElement(tab);
+                tabsContainer.insertBefore(tabElement, newTabButton);
+            });
+        }
+
+        function createTabElement(tab) {
+            const tabElement = document.createElement('div');
+            tabElement.className = `tab ${tab.active ? 'active' : ''} ${tab.isLoading ? 'loading' : ''}`;
+            tabElement.dataset.tabId = tab.id;
+            
+            tabElement.innerHTML = `
+                <img class="tab-favicon" src="${tab.favicon || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="%23ccc"/></svg>'}" alt="favicon">
+                <span class="tab-title">${tab.title || 'Nueva pestaña'}</span>
+                <div class="tab-loading"></div>
+                <button class="tab-close" onclick="closeTab('${tab.id}', event)">×</button>
+            `;
+            
+            // Event listener para cambiar tab
+            tabElement.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('tab-close')) {
+                    switchToTab(tab.id);
+                }
+            });
+            
+            return tabElement;
+        }
+
+        async function createNewTab(url = 'about:blank') {
+            try {
+                const tabId = await silhouetteAPI.browser.createTab(url, { active: true });
+                console.log('📄 Nueva tab creada:', tabId);
+                await loadTabs();
+                return tabId;
+            } catch (error) {
+                console.error('❌ Error creando tab:', error);
+                showNotification('Error al crear nueva pestaña', 'error');
+            }
+        }
+
+        async function closeTab(tabId, event) {
+            if (event) event.stopPropagation();
+            
+            try {
+                await silhouetteAPI.browser.closeTab(tabId);
+                console.log('📄 Tab cerrada:', tabId);
+                await loadTabs();
+            } catch (error) {
+                console.error('❌ Error cerrando tab:', error);
+                showNotification('Error al cerrar pestaña', 'error');
+            }
+        }
+
+        async function switchToTab(tabId) {
+            try {
+                await silhouetteAPI.browser.switchToTab(tabId);
+                console.log('🔄 Cambiado a tab:', tabId);
+                await loadTabs();
+                await loadCurrentTab();
+            } catch (error) {
+                console.error('❌ Error cambiando tab:', error);
+                showNotification('Error al cambiar pestaña', 'error');
+            }
+        }
+
+        async function loadCurrentTab() {
+            try {
+                const url = await silhouetteAPI.browser.getCurrentUrl();
+                const title = await silhouetteAPI.browser.getCurrentTitle();
+                
+                if (url) {
+                    currentUrl = url;
+                    document.getElementById('addressInput').value = url;
+                }
+                
+                if (title) {
+                    currentTitle = title;
+                }
+                
+                console.log('📄 Tab actual:', title, '-', url);
+            } catch (error) {
+                console.error('❌ Error cargando tab actual:', error);
+            }
+        }
+
+        // ========================================================================
+        // NAVEGACIÓN CON BROWSERVIEW
+        // ========================================================================
+        
+        async function navigateToUrl(url) {
+            if (!url) return;
+            
+            try {
+                await silhouetteAPI.browser.navigate(url);
+                currentUrl = url;
+                showStatus('Navegando a: ' + url);
+            } catch (error) {
+                console.error('❌ Error navegando:', error);
+                showNotification('Error al navegar', 'error');
+            }
+        }
+
+        async function goBack() {
+            try {
+                await silhouetteAPI.browser.goBack();
+            } catch (error) {
+                console.error('❌ Error retrocediendo:', error);
+            }
+        }
+
+        async function goForward() {
+            try {
+                await silhouetteAPI.browser.goForward();
+            } catch (error) {
+                console.error('❌ Error avanzando:', error);
+            }
+        }
+
+        async function refresh() {
+            try {
+                await silhouetteAPI.browser.refresh();
+            } catch (error) {
+                console.error('❌ Error recargando:', error);
+            }
+        }
+
+        // ========================================================================
+        // SISTEMA OMNIPOTENTE CON BROWSERVIEW
+        // ========================================================================
+        
+        function setupOmnipotentSystem() {
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    executeOmnipotentCommand();
+                }
+            });
+            
+            // Update status
+            updateOmnipotentStatus('ready', 'Sistema omnipotente con BrowserView activo');
+        }
+
+        async function executeOmnipotentCommand() {
+            const commandInput = document.getElementById('omnipotentCommand');
+            const resultsDiv = document.getElementById('omnipotentResults');
+            const button = event.target.closest('button');
+            
+            const command = commandInput.value.trim();
+            if (!command) {
+                showNotification('Por favor introduce un comando', 'warning');
+                return;
+            }
+            
+            try {
+                // Disable button and show loading
+                button.disabled = true;
+                button.innerHTML = '<span>⏳</span><span>Ejecutando...</span>';
+                omnipotentExecuting = true;
+                
+                updateOmnipotentStatus('executing', 'Ejecutando comando en BrowserView...');
+                
+                // Execute command
+                const result = await silhouetteAPI.omnipotent.executeCommand({
+                    command: command
+                });
+                
+                if (result.success) {
+                    // Display result
+                    const timestamp = new Date().toLocaleTimeString();
+                    const resultText = `
+=== COMANDO EJECUTADO ===
+Hora: ${timestamp}
+Comando: ${command}
+Estado: ✅ Éxito
+
+=== RESULTADO ===
+${JSON.stringify(result.result, null, 2)}
+
+=== PRÓXIMOS PASOS ===
+El sistema omnipotente puede continuar con:
+• Análisis de la página cargada
+• Extracción de datos específicos
+• Automatización adicional en BrowserView
+                    `;
+                    
+                    resultsDiv.textContent = resultText;
+                    showNotification('Comando ejecutado exitosamente', 'success');
+                    
+                    // Reload tabs to reflect changes
+                    await loadTabs();
+                    
+                } else {
+                    throw new Error(result.error);
+                }
+                
+            } catch (error) {
+                console.error('❌ Error ejecutando comando omnipotente:', error);
+                
+                const errorText = `
+=== ERROR EN COMANDO ===
+Comando: ${command}
+Error: ${error.message}
+Hora: ${new Date().toLocaleTimeString()}
+
+=== RECOMENDACIÓN ===
+Verifica la sintaxis del comando o intenta una acción más específica.
+                `;
+                
+                resultsDiv.textContent = errorText;
+                showNotification('Error al ejecutar comando', 'error');
+                updateOmnipotentStatus('error', 'Error en comando omnipotente');
+                
+            } finally {
+                // Re-enable button
+                button.disabled = false;
+                button.innerHTML = '<span>🚀</span><span>Ejecutar Comando Omnipotente</span>';
+                omnipotentExecuting = false;
+                
+                if (omnipotentExecuting) {
+                    updateOmnipotentStatus('ready', 'Sistema listo para nuevo comando');
+                }
+            }
+        }
+
+        function updateOmnipotentStatus(status, message) {
+            const indicator = document.getElementById('omnipotentStatusIndicator');
+            const text = document.getElementById('omnipotentStatusText');
+            
+            text.textContent = message;
+            
+            indicator.className = 'status-indicator';
+            switch (status) {
+                case 'ready':
+                    indicator.classList.add('ready');
+                    text.textContent += ' - Listo';
+                    break;
+                case 'executing':
+                    indicator.classList.add('warning');
+                    text.textContent += ' - Ejecutando...';
+                    break;
+                case 'error':
+                    indicator.classList.add('error');
+                    text.textContent += ' - Error';
+                    break;
+            }
+        }
+
+        // ========================================================================
+        // EVENT LISTENERS
+        // ========================================================================
+        
+        function setupEventListeners() {
+            // Navigation buttons
+            document.getElementById('backButton').addEventListener('click', goBack);
+            document.getElementById('forwardButton').addEventListener('click', goForward);
+            document.getElementById('refreshButton').addEventListener('click', refresh);
+            document.getElementById('homeButton').addEventListener('click', () => navigateToUrl('about:blank'));
+            
+            // Address bar
+            const addressInput = document.getElementById('addressInput');
+            addressInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    navigateToUrl(addressInput.value);
+                }
+            });
+            
+            document.getElementById('searchButton').addEventListener('click', () => {
+                const query = addressInput.value;
+                if (query) {
+                    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                    navigateToUrl(searchUrl);
+                }
+            });
+            
+            // New tab button
+            document.getElementById('newTabButton').addEventListener('click', () => {
+                createNewTab('about:blank');
+            });
+            
+            // AI tabs
+            document.querySelectorAll('.ai-tab').forEach(tab => {
+                tab.addEventListener('click', () => switchAITab(tab.dataset.tab));
+            });
+        }
+
+        function setupTabEventListeners() {
+            // Event listeners for tab updates
+            silhouetteAPI.onTabUpdate((data) => {
+                console.log('🔄 Tab actualizada:', data);
+                loadTabs();
+            });
+            
+            silhouetteAPI.onTabCreated((data) => {
+                console.log('📄 Tab creada:', data);
+                loadTabs();
+            });
+            
+            silhouetteAPI.onTabClosed((data) => {
+                console.log('🗑️ Tab cerrada:', data);
+                loadTabs();
+            });
+            
+            silhouetteAPI.onTabActiveChanged((data) => {
+                console.log('🔄 Tab activa cambiada:', data);
+                loadTabs();
+            });
+            
+            // Page events
+            silhouetteAPI.onPageLoadStarted((data) => {
+                updateTabLoading(data.tabId, true);
+            });
+            
+            silhouetteAPI.onPageLoadFinished((data) => {
+                updateTabLoading(data.tabId, false);
+                loadCurrentTab();
+            });
+            
+            silhouetteAPI.onPageTitleUpdated((data) => {
+                updateTabTitle(data.tabId, data.title);
+            });
+            
+            silhouetteAPI.onPageFaviconUpdated((data) => {
+                updateTabFavicon(data.tabId, data.favicons?.[0]);
+            });
+        }
+
+        function switchAITab(tabName) {
+            // Update active tab
+            document.querySelectorAll('.ai-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            
+            // Show content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+        }
+
+        // ========================================================================
+        // UTILIDADES
+        // ========================================================================
+        
+        async function loadBrowserStats() {
+            try {
+                browserStats = await silhouetteAPI.browser.getStats();
+                console.log('📊 Estadísticas cargadas:', browserStats);
+            } catch (error) {
+                console.error('❌ Error cargando estadísticas:', error);
+            }
+        }
+
+        function updateTabLoading(tabId, isLoading) {
+            const tabElement = document.querySelector(`[data-tab-id="${tabId}"]`);
+            if (tabElement) {
+                if (isLoading) {
+                    tabElement.classList.add('loading');
+                } else {
+                    tabElement.classList.remove('loading');
+                }
+            }
+        }
+
+        function updateTabTitle(tabId, title) {
+            const tabElement = document.querySelector(`[data-tab-id="${tabId}"]`);
+            const titleElement = tabElement?.querySelector('.tab-title');
+            if (titleElement) {
+                titleElement.textContent = title || 'Nueva pestaña';
+            }
+        }
+
+        function updateTabFavicon(tabId, favicon) {
+            const tabElement = document.querySelector(`[data-tab-id="${tabId}"]`);
+            const faviconElement = tabElement?.querySelector('.tab-favicon');
+            if (faviconElement && favicon) {
+                faviconElement.src = favicon;
+            }
+        }
+
+        function showStatus(message) {
+            const statusElement = document.getElementById('browserStatus');
+            statusElement.textContent = message;
+            statusElement.classList.add('show');
+            
+            setTimeout(() => {
+                statusElement.classList.remove('show');
+            }, 3000);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        async function loadInitialData() {
+            try {
+                // Cargar configuración
+                const settings = await silhouetteAPI.browser.getSettings();
+                console.log('⚙️ Configuración cargada:', settings);
+                
+                // Cargar historial
+                const history = await silhouetteAPI.browser.getHistory(10);
+                console.log('📚 Historial cargado:', history.length, 'entradas');
+                
+                // Cargar marcadores
+                const bookmarks = await silhouetteAPI.browser.getBookmarks();
+                console.log('🔖 Marcadores cargados:', bookmarks.length);
+                
+            } catch (error) {
+                console.error('❌ Error cargando datos iniciales:', error);
+            }
+        }
+
+        // ========================================================================
+        // WINDOW EVENTS
+        // ========================================================================
+        
+        window.addEventListener('beforeunload', (e) => {
+            if (omnipotentExecuting) {
+                e.preventDefault();
+                e.returnValue = 'Hay un comando omnipotente en ejecución. ¿Estás seguro de que quieres salir?';
+            }
+        });
+
+        // ========================================================================
+        // QUICK COMMANDS
+        // ========================================================================
+        
+        window.addQuickCommand = function(command) {
+            const input = document.getElementById('omnipotentCommand');
+            input.value = command;
+            executeOmnipotentCommand();
+        };
+
+        // Predefined quick commands
+        window.quickCommands = {
+            'search-news': 'Ve a Google y busca las últimas noticias de inteligencia artificial',
+            'github-trending': 'Ve a GitHub y busca los proyectos de React más populares',
+            'amazon-search': 'Ve a Amazon y busca laptops gaming con buenas reseñas',
+            'extract-links': 'Extrae todos los enlaces de la página actual',
+            'analyze-page': 'Analiza el contenido de esta página y resume los puntos principales'
+        };
+
+        console.log('🚀 Silhouette Browser V5.3 - BrowserView Edition cargado');
+    </script>
+</body>
+</html>
